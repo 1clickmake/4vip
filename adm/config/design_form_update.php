@@ -1,0 +1,27 @@
+<?php
+include_once './_common.php';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    $template_id = filter_input(INPUT_POST, 'template_id', FILTER_SANITIZE_SPECIAL_CHARS);
+   
+	$DataToUpdate = [
+		'template_id' => $template_id
+	];
+	// 업데이트 조건 where
+	$where = [
+		'id' => 1 
+	];
+	$data_update = process_data_update('cm_config', $DataToUpdate, $where); // $pdo 인자 없이 호출
+	
+	// 삽입 결과 확인
+    if ($data_update !== false) {
+        // 삽입 성공
+		alert('업데이트 되었습니다.', './design_form.php');
+        exit;
+    } else {
+        // 삽입 실패 
+        echo "<script>alert('오류가 발생했습니다.'); history.back();</script>";
+        exit;
+    }
+}
