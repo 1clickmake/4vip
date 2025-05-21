@@ -155,6 +155,10 @@ switch ($action) {
         // 코멘트 삭제
         $where = ['comment_id' => $comment_id];
 
+        /*에디터 이미지 삭제*/
+		$editorDir = CM_DATA_PATH.'/board/'.$board_id.'/editor';
+		process_editor_image_delete('cm_board_comment', 'content', ['board_id' => $board_id, 'board_num' => $board_num, 'comment_id' => $comment_id], $editorDir);
+
         if (process_data_delete('cm_board_comment', $where)) {
             $response['status'] = 'success';
             $response['message'] = '댓글이 삭제되었습니다.';
