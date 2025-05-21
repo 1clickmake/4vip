@@ -8,11 +8,16 @@ $options = [
     'page' => $_GET['page'] ?? 1,
     'per_page' => 20,
     'order_by' => 'created_at DESC',
-    'conditions' => [
-        ['field' => 'board_id', 'operator' => 'LIKE', 'value' => $_GET['board_id'] ?? ''],
-        ['field' => 'board_name', 'operator' => '=', 'value' => $_GET['status'] ?? ''],
-    ]
+    'conditions' => []
 ];
+
+// 검색 조건이 있는 경우에만 conditions에 추가
+if (!empty($_GET['board_id'])) {
+    $options['conditions'][] = ['field' => 'board_id', 'operator' => 'LIKE', 'value' => $_GET['board_id']];
+}
+if (!empty($_GET['board_name'])) {
+    $options['conditions'][] = ['field' => 'board_name', 'operator' => 'LIKE', 'value' => $_GET['board_name']];
+}
 
 $result = sql_list($options);
 $total_pages = $result['total_pages'];
@@ -22,49 +27,62 @@ $page = $result['current_page'];
 <!-- Main Content -->
 <div class="main-content shifted" id="mainContent">
     <div class="container-fluid">
-        <h2><?php echo $cm_title;?></h2>
-
-        <!-- 게시판 생성 버튼 -->
-        <button type="button" class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#createBoardModal" onclick="resetModal()">
-            새 게시판 만들기
-        </button>
-
-        <!-- 게시판 목록 -->
-        <div class="card">
-            <div class="card-header">
-                게시판 목록 및 삭제
-            </div>
-            <div class="card-body">
-                <?php if (empty($result['list'])) { ?>
-                <div class="text-center">
-                    생성된 게시판이 없습니다
-                </div>
-                <?php } else { ?>
-                <ul class="list-group mb-3">
-                    <?php foreach ($result['list'] as $list) { ?>
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <a href="<?php echo get_board_url('list', $list['board_id']);?>"><?php echo $list['board_id']; ?></a>
-                        <?php echo $list['board_name']; ?>
-                        <?php echo $list['board_skin']; ?>
-                        <span>
-                            <button type="button" class="btn btn-primary btn-sm" onclick="editBoard('<?php echo $list['board_id']; ?>')">수정</button>
-                            <button type="button" class="btn btn-danger btn-sm" onclick="deleteBoard('<?php echo $list['board_id']; ?>', '<?php echo $list['board_name']; ?>')">삭제</button>
-                        </span>
-                    </li>
-                    <?php } ?>
-                </ul>
-                <?php } ?>
-            </div>
-			
-			<!-- 페이지네이션 -->
-			<?php echo render_pagination($page, $total_pages, $_GET);?>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="admin-list-title"><?php echo $cm_title;?></h2>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createBoardModal" onclick="resetModal()">
+                새 게시판 만들기
+            </button>
         </div>
 
+        <div class="table-responsive">
+            <table class="table table-sm table-striped table-bordered align-middle" style="min-width:1200px;">
+                <thead class="table-dark text-center">
+                    <tr>
+                        <th scope="col">No</th>
+                        <th scope="col">게시판 ID</th>
+                        <th scope="col">게시판 이름</th>
+                        <th scope="col">스킨</th>
+                        <th scope="col">관리</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (empty($result['list'])){ ?>
+                        <tr>
+                            <td colspan="5" class="text-center">등록된 게시판이 없습니다.</td>
+                        </tr>
+                    <?php } else { ?>
+                        <?php 
+                        $start_number = $result['total_rows'] - ($page - 1) * $options['per_page'];
+                        foreach ($result['list'] as $index => $list) {
+                            $list_no = $start_number - $index;
+                        ?>
+                        <tr class="text-center">
+                            <td><?php echo $list_no;?></td>
+                            <td>
+                                <a href="<?php echo get_board_url('list', $list['board_id']);?>">
+                                    <?php echo $list['board_id']; ?>
+                                </a>
+                            </td>
+                            <td><?php echo $list['board_name'];?></td>
+                            <td><?php echo $list['board_skin'];?></td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-primary me-2" onclick="editBoard('<?php echo $list['board_id']; ?>')">수정</button>
+                                <button type="button" class="btn btn-sm btn-danger" onclick="deleteBoard('<?php echo $list['board_id']; ?>', '<?php echo htmlspecialchars($list['board_name']); ?>')">삭제</button>
+                            </td>
+                        </tr>
+                        <?php } ?>
+                    <?php } ?>
+                </tbody>
+            </table>
+        </div>
         
+        <!-- 페이지네이션 -->
+        <?php echo render_pagination($page, $total_pages, $_GET);?>
+        <!-- 페이지네이션 끝-->
 
-        <!-- 게시판 생성/수정 모달 { -->
+        <!-- 게시판 생성/수정 모달 -->
         <div class="modal fade" id="createBoardModal" tabindex="-1" aria-labelledby="createBoardModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg">
+            <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="createBoardModalLabel">게시판 관리</h5>
@@ -87,7 +105,7 @@ $page = $result['current_page'];
                                 </select>
                             </div>
                             <div class="mb-3">
-                                <label for="boardId" class="form-label">게시판 아이디 (영문, 기호, 숫자만)</label>
+                                <label for="boardId" class="form-label">게시판 아이디</label>
                                 <input type="text" class="form-control" id="boardId" name="board_id" required pattern="^[a-zA-Z0-9!@#$%^&*()_+=\-\[\]{};':\\|,.<>\/?~]*$">
                                 <small class="form-text text-muted">영문, 숫자, 일부 기호(-,_)만 사용할 수 있습니다.</small>
                             </div>
@@ -109,15 +127,15 @@ $page = $result['current_page'];
                             </div>
                             <div class="mb-3">
                                 <label for="write_lv" class="form-label">글쓰기 레벨</label>
-                                <input type="text" class="form-control" id="write_lv" name="write_lv" required>
+                                <input type="number" class="form-control" id="write_lv" name="write_lv" required min="0">
                             </div>
                             <div class="mb-3">
                                 <label for="list_lv" class="form-label">리스트 레벨</label>
-                                <input type="text" class="form-control" id="list_lv" name="list_lv" required>
+                                <input type="number" class="form-control" id="list_lv" name="list_lv" required min="0">
                             </div>
                             <div class="mb-3">
                                 <label for="view_lv" class="form-label">글보기 레벨</label>
-                                <input type="text" class="form-control" id="view_lv" name="view_lv" required>
+                                <input type="number" class="form-control" id="view_lv" name="view_lv" required min="0">
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -128,8 +146,6 @@ $page = $result['current_page'];
                 </div>
             </div>
         </div>
-		<!-- } 게시판 생성/수정 모달 끝 -->
-		
     </div>
 </div>
 

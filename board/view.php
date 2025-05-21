@@ -17,19 +17,14 @@ if($bo['view_lv'] > 0 ){
 }
 
 try {
-    
-    
     // 게시글 정보 가져오기
-    $stmt = $pdo->prepare("
-        SELECT * FROM cm_board 
-        WHERE board_id = :board_id and board_num = :board_num
-    ");
-	
-	$stmt->bindParam(':board_id', $boardId);
-    $stmt->bindParam(':board_num', $boardNum);
-    $stmt->execute();
+    $sql = "SELECT * FROM cm_board WHERE board_id = :board_id AND board_num = :board_num";
+    $params = [
+        ':board_id' => $boardId,
+        ':board_num' => $boardNum
+    ];
     
-    $view = $stmt->fetch();
+    $view = sql_fetch($sql, $params);
     
     if (!$view) {
         echo "<script>alert('존재하지 않는 게시글입니다.'); location.href='list.php?board={$boardId}';</script>";
@@ -38,23 +33,23 @@ try {
 	
 	// 조회수 증가
 	if($view['ip'] !== $ip){
-		$stmt = $pdo->prepare("UPDATE cm_board SET view_count = view_count + 1 WHERE board_id = :board_id AND board_num = :board_num");
-		$stmt->bindParam(':board_id', $boardId);
-		$stmt->bindParam(':board_num', $boardNum);
-		$stmt->execute();
+		$update_data = ['view_count' => $view['view_count'] + 1];
+		$where_conditions = [
+			'board_id' => $boardId,
+			'board_num' => $boardNum
+		];
+		process_data_update('cm_board', $update_data, $where_conditions);
 	}
     
     // 첨부파일 목록 가져오기
-    $stmt = $pdo->prepare("
-        SELECT * FROM cm_board_file
-        WHERE board_id = :board_id AND board_num = :board_num
-        ORDER BY file_id ASC
-    ");
-	$stmt->bindParam(':board_id', $boardId);
-    $stmt->bindParam(':board_num', $boardNum);
-    $stmt->execute();
-    
-    $files = $stmt->fetchAll();
+    $file_sql = "SELECT * FROM cm_board_file 
+                 WHERE board_id = :board_id AND board_num = :board_num 
+                 ORDER BY file_id ASC";
+    $file_params = [
+        ':board_id' => $boardId,
+        ':board_num' => $boardNum
+    ];
+    $files = sql_all_list($file_sql, $file_params);
     
 } catch (PDOException $e) {
     echo "<script>alert('오류가 발생했습니다: " . $e->getMessage() . "'); history.back();</script>";

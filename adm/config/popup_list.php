@@ -2,84 +2,91 @@
 include_once './_common.php';
 $cm_title = "팝업레이어 관리";
 include_once CM_ADMIN_PATH.'/admin.head.php';
+
+// 목록 조회 옵션 설정
+$options = [
+    'table' => 'cm_popup',
+    'page' => $_GET['page'] ?? 1,
+    'per_page' => 20,
+    'order_by' => 'po_id DESC',
+    'conditions' => []
+];
+
+$result = sql_list($options);
+$total_pages = $result['total_pages'];
+$page = $result['current_page'];
 ?>
 
     <!-- Main Content -->
     <div class="main-content shifted" id="mainContent">
         <div class="container-fluid">
 			<div class="d-flex justify-content-between align-items-center mb-4">
-				<h2 class="mb-4"><?php echo $cm_title;?></h2>
+				<h2 class="admin-list-title"><?php echo $cm_title;?></h2>
 				<a href="popup_form.php" class="btn btn-primary">팝업 생성</a>
 			</div>
 
-			<?php
-			try {
-				// 팝업 목록 조회
-				$sql = "SELECT * FROM cm_popup ORDER BY po_id DESC";
-				$stmt = $pdo->prepare($sql);
-				$stmt->execute();
-				$popups = $stmt->fetchAll();
-			} catch (PDOException $e) {
-				echo '<div class="alert alert-danger">데이터 조회 중 오류가 발생했습니다: ' . $e->getMessage() . '</div>';
-			}
-			?>
-
-			<div class="card">
-				<div class="card-body">
-					<table class="table table-striped table-hover text-center">
-						<thead>
+			<div class="table-responsive">
+				<table class="table table-sm table-striped table-bordered align-middle" style="min-width:1200px;">
+					<thead class="table-dark text-center">
+						<tr>
+							<th scope="col">No</th>
+							<th scope="col">팝업 제목</th>
+							<th scope="col">노출 기간</th>
+							<th scope="col">크기</th>
+							<th scope="col">상태</th>
+							<th scope="col">관리</th>
+						</tr>
+					</thead>
+					<tbody>
+						<?php if (empty($result['list'])){ ?>
 							<tr>
-								<th>번호</th>
-								<th>팝업 제목</th>
-								<th>노출 기간</th>
-								<th>크기</th>
-								<th>상태</th>
-								<th>관리</th>
+								<td colspan="6" class="text-center">등록된 팝업이 없습니다.</td>
 							</tr>
-						</thead>
-						<tbody>
-							<?php if (isset($popups) && count($popups) > 0) : ?>
-								<?php foreach ($popups as $popup) : ?>
-									<tr>
-										<td><?php echo $popup['po_id']; ?></td>
-										<td><?php echo htmlspecialchars($popup['po_title']); ?></td>
-										<td><?php echo $popup['po_start_date'] . ' ~ ' . $popup['po_end_date']; ?></td>
-										<td><?php echo $popup['po_width'] . 'x' . $popup['po_height']; ?></td>
-										<td>
-											<?php
-											$today = date('Y-m-d');
-											$start_date = $popup['po_start_date'];
-											$end_date = $popup['po_end_date'];
-											$status = '';
-											
-											if ($popup['po_use'] == 0) {
-												$status = '<span class="badge bg-secondary">미사용</span>';
-											} elseif ($today < $start_date) {
-												$status = '<span class="badge bg-warning text-dark">대기</span>';
-											} elseif ($today > $end_date) {
-												$status = '<span class="badge bg-danger">종료</span>';
-											} else {
-												$status = '<span class="badge bg-success">활성</span>';
-											}
-											
-											echo $status;
-											?>
-										</td>
-										<td>
-											<a href="popup_form.php?po_id=<?php echo $popup['po_id']; ?>" class="btn btn-sm btn-outline-primary">수정</a>
-											<button type="button" class="btn btn-sm btn-outline-danger delete-popup" data-po-id="<?php echo $popup['po_id']; ?>" data-po-title="<?php echo htmlspecialchars($popup['po_title']); ?>">삭제</button>
-										</td>
-									</tr>
-								<?php endforeach; ?>
-							<?php else : ?>
-								<tr>
-									<td colspan="6" class="text-center">등록된 팝업이 없습니다.</td>
-								</tr>
-							<?php endif; ?>
-						</tbody>
-					</table>
-				</div>
+						<?php } else { ?>
+							<?php 
+							$start_number = $result['total_rows'] - ($page - 1) * $options['per_page'];
+							foreach ($result['list'] as $index => $list) {
+								$list_no = $start_number - $index;
+							?>
+							<tr class="text-center">
+								<td><?php echo $list_no;?></td>
+								<td><?php echo htmlspecialchars($list['po_title']);?></td>
+								<td><?php echo $list['po_start_date'] . ' ~ ' . $list['po_end_date'];?></td>
+								<td><?php echo $list['po_width'] . 'x' . $list['po_height'];?></td>
+								<td>
+									<?php
+									$today = date('Y-m-d');
+									$start_date = $list['po_start_date'];
+									$end_date = $list['po_end_date'];
+									$status = '';
+									
+									if ($list['po_use'] == 0) {
+										$status = '<span class="badge bg-secondary">미사용</span>';
+									} elseif ($today < $start_date) {
+										$status = '<span class="badge bg-warning text-dark">대기</span>';
+									} elseif ($today > $end_date) {
+										$status = '<span class="badge bg-danger">종료</span>';
+									} else {
+										$status = '<span class="badge bg-success">활성</span>';
+									}
+									
+									echo $status;
+									?>
+								</td>
+								<td>
+									<a href="popup_form.php?po_id=<?php echo $list['po_id'];?>" class="btn btn-sm btn-primary me-2">수정</a>
+									<button type="button" class="btn btn-sm btn-danger delete-popup" data-po-id="<?php echo $list['po_id'];?>" data-po-title="<?php echo htmlspecialchars($list['po_title']);?>">삭제</button>
+								</td>
+							</tr>
+							<?php } ?>
+						<?php } ?>
+					</tbody>
+				</table>
 			</div>
+			
+			<!-- 페이지네이션 -->
+			<?php echo render_pagination($page, $total_pages, $_GET);?>
+			<!-- 페이지네이션 끝-->
 		</div>
 
 		<!-- 삭제 확인 모달 -->

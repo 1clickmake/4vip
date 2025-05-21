@@ -8,13 +8,16 @@ $options = [
     'page' => $_GET['page'] ?? 1,
     'per_page' => 20,
     'order_by' => 'id DESC',
-    'conditions' => [
-        ['field' => 'user_id', 'operator' => '=', 'value' => $_GET['user_id'] ?? ''],
-        ['field' => 'description', 'operator' => 'LIKE', 'value' => $_GET['description'] ?? ''],
-        //['field' => 'category', 'operator' => 'IN', 'value' => $_GET['category'] ?? []],
-        //['field' => 'created_at', 'operator' => 'BETWEEN', 'value' => [$_GET['from'] ?? '', $_GET['to'] ?? '']],
-    ]
+    'conditions' => []
 ];
+
+// 검색 조건이 있는 경우에만 conditions에 추가
+if (!empty($_GET['user_id'])) {
+    $options['conditions'][] = ['field' => 'user_id', 'operator' => 'LIKE', 'value' => $_GET['user_id']];
+}
+if (!empty($_GET['description'])) {
+    $options['conditions'][] = ['field' => 'description', 'operator' => 'LIKE', 'value' => $_GET['description']];
+}
 
 $result = sql_list($options);
 $total_pages = $result['total_pages'];

@@ -13,25 +13,48 @@ if($bo['list_lv'] > 0 ){
 	}
 }
 
-$result = sql_board_list( 'cm_board', [
-    'page' => $_GET['page'] ?? 1,
-    'per_page' => 10,
-    'order_by' => 'board_num',
-    'order_dir' => 'DESC',
-    'debug' => false,
-    'search' => [
-		['field' => 'board_id', 'operator' => '=', 'value' => $boardId ?? ''],
-        ['field' => 'title', 'operator' => 'LIKE', 'value' => $_GET['title'] ?? ''],
-		['field' => 'content', 'operator' => 'LIKE', 'value' => $_GET['content'] ?? ''],
-		['field' => 'name', 'operator' => 'LIKE', 'value' => $_GET['name'] ?? ''],
-        //['field' => 'created_at', 'operator' => 'BETWEEN', 'value' => [$_GET['from'] ?? '', $_GET['to'] ?? '']],
-        //['field' => 'board_type', 'operator' => 'IN', 'value' => explode(',', $_GET['types'] ?? '')],
-    ]
+// 검색 조건 설정
+$search_conditions = [
+	['field' => 'board_id', 'operator' => '=', 'value' => $boardId ?? '']
+];
+
+// 검색어가 있는 경우에만 검색 조건 추가
+if (!empty($_GET['search_keyword'])) {
+	$search_field = $_GET['search_field'] ?? 'title';
+	
+	switch ($search_field) {
+		case 'title':
+			$search_conditions[] = ['field' => 'title', 'operator' => 'LIKE', 'value' => $_GET['search_keyword']];
+			break;
+		case 'content':
+			$search_conditions[] = ['field' => 'content', 'operator' => 'LIKE', 'value' => $_GET['search_keyword']];
+			break;
+		case 'name':
+			$search_conditions[] = ['field' => 'name', 'operator' => 'LIKE', 'value' => $_GET['search_keyword']];
+			break;
+		case 'title_content':
+			$search_conditions[] = ['field' => 'title', 'operator' => 'LIKE', 'value' => $_GET['search_keyword']];
+			$search_conditions[] = ['field' => 'content', 'operator' => 'LIKE', 'value' => $_GET['search_keyword']];
+			break;
+	}
+}
+
+$result = sql_board_list('cm_board', [
+	'page' => $_GET['page'] ?? 1,
+	'per_page' => 10,
+	'order_by' => 'board_num',
+	'order_dir' => 'DESC',
+	'debug' => false,
+	'search' => $search_conditions
 ]);
 
 $rows = $result['list'];
 $total_pages = $result['total_pages'];
 $page = $result['current_page'];
+$total_rows = $result['total_rows'];
+
+// 목록 번호 계산
+$start_number = $total_rows - ($page - 1) * 10;
 
 //스킨경로
 //$formAction = CM_BOARD_URL."/write_update.php";

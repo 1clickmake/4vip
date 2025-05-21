@@ -1,20 +1,23 @@
 <?php
 include_once './_common.php';
 $cm_title = "회원 관리";
-include_once CM_ADMIN_PATH.'/admin.head.php';
+include_once CM_ADMIN_PATH.'/admin.head.php'; 
 
 $options = [
     'table' => 'cm_users',
     'page' => $_GET['page'] ?? 1,
     'per_page' => 20,
     'order_by' => 'user_no DESC',
-    'conditions' => [
-        ['field' => 'user_id', 'operator' => '=', 'value' => $_GET['user_id'] ?? ''],
-        ['field' => 'user_name', 'operator' => '=', 'value' => $_GET['user_name'] ?? ''],
-        //['field' => 'category', 'operator' => 'IN', 'value' => $_GET['category'] ?? []],
-        //['field' => 'created_at', 'operator' => 'BETWEEN', 'value' => [$_GET['from'] ?? '', $_GET['to'] ?? '']],
-    ]
+    'conditions' => []
 ];
+
+// 검색 조건이 있는 경우에만 conditions에 추가
+if (!empty($_GET['user_id'])) {
+    $options['conditions'][] = ['field' => 'user_id', 'operator' => 'LIKE', 'value' => $_GET['user_id']];
+}
+if (!empty($_GET['user_name'])) {
+    $options['conditions'][] = ['field' => 'user_name', 'operator' => 'LIKE', 'value' => $_GET['user_name']];
+}
 
 $result = sql_list($options);
 $total_pages = $result['total_pages'];
@@ -43,7 +46,7 @@ $page = $result['current_page'];
 					<tbody>
 						<?php if (empty($result)){ ?>
 							<tr>
-								<td colspan="6" class="text-center">포인트 내역이 없습니다.</td>
+								<td colspan="6" class="text-center">회원이이 없습니다.</td>
 							</tr>
 						<?php } else { ?>
 							<?php 

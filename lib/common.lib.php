@@ -534,7 +534,7 @@ function sql_list(array $options = []): array {
 
     if (!$pdo) {
         error_log("sql_fetch 오류: 데이터베이스 연결( \$pdo )이 설정되지 않았습니다.");
-        return false;
+        return [];
     }
 	
     $table = $options['table'] ?? '';
@@ -542,10 +542,6 @@ function sql_list(array $options = []): array {
     $per_page = $options['per_page'] ?? 10;
     $order_by = $options['order_by'] ?? 'id DESC';
     $conditions = $options['conditions'] ?? [];
-
-    // 화이트리스트: 허용된 필드와 연산자만 허용
-    $allowed_fields = ['title', 'content', 'name', 'created_at', 'status', 'category'];
-    $allowed_operators = ['=', '!=', '>', '>=', '<', '<=', 'LIKE', 'IN', 'BETWEEN'];
 
     if (!$table) {
         throw new InvalidArgumentException('테이블명을 지정해주세요.');
@@ -560,8 +556,8 @@ function sql_list(array $options = []): array {
         $operator = strtoupper($cond['operator'] ?? '=');
         $value = $cond['value'] ?? '';
 
-        if (!in_array($field, $allowed_fields) || !in_array($operator, $allowed_operators)) {
-            continue; // 허용되지 않은 필드/연산자 무시
+        if (empty($field) || empty($operator)) {
+            continue;
         }
 
         $param_key = ":cond$idx";
@@ -730,9 +726,9 @@ function sql_board_list(string $table, array $options = []): array {
  * @param string $sql    실행할 SQL 쿼리
  * @param array  $params (선택 사항) 쿼리 매개변수
  */
-function sql_all_list(string $sql, array $params = []) // sql_fetch와 마찬가지로 $sql과 $params를 인자로 받아요
+function sql_all_list(string $sql, array $params = [])
 {
-    global $pdo; // 데이터베이스 연결 객체인 $pdo에 접근
+    global $pdo;
 
     if (!$pdo) {
         error_log("sql_list 오류: 데이터베이스 연결( \$pdo )이 설정되지 않았습니다.");
@@ -743,31 +739,37 @@ function sql_all_list(string $sql, array $params = []) // sql_fetch와 마찬가
         // 쿼리 준비
         $stmt = $pdo->prepare($sql);
 
-        // 쿼리 실행 및 파라미터 바인딩 (가장 중요한 보안 부분!)
-        $executeResult = $stmt->execute($params);
+        // 파라미터 바인딩
+        foreach ($params as $key => $value) {
+            if ($key === ':limit' || $key === ':offset') {
+                $stmt->bindValue($key, (int)$value, PDO::PARAM_INT);
+            } else {
+                $stmt->bindValue($key, $value);
+            }
+        }
 
-         if ($executeResult === false) {
-             error_log("sql_list 오류: 쿼리 실행 실패. [쿼리: " . $sql . "] [파라미터: " . print_r($params, true) . "]");
-             return false;
-         }
+        // 쿼리 실행
+        $executeResult = $stmt->execute();
+
+        if ($executeResult === false) {
+            error_log("sql_list 오류: 쿼리 실행 실패. [쿼리: " . $sql . "] [파라미터: " . print_r($params, true) . "]");
+            return false;
+        }
 
         // 결과의 모든 행을 연관 배열의 배열로 가져오기
-        // 결과가 없으면 빈 배열([])을 반환합니다.
         $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // Statement 객체 닫기 (리소스 관리에 좋음)
+        // Statement 객체 닫기
         $stmt->closeCursor();
 
-        return $results; // 모든 결과 행이 담긴 배열을 반환!
+        return $results;
 
     } catch (PDOException $e) {
-        // 데이터베이스 관련 오류 발생 시
         error_log("sql_list 오류: " . $e->getMessage() . " [쿼리: " . $sql . "] [파라미터: " . print_r($params, true) . "]");
         return false;
     } catch (Exception $e) {
-        // 그 외 일반적인 오류 발생 시
-         error_log("sql_list 알 수 없는 오류: " . $e->getMessage() . " [쿼리: " . $sql . "] [파라미터: " . print_r($params, true) . "]");
-         return false;
+        error_log("sql_list 알 수 없는 오류: " . $e->getMessage() . " [쿼리: " . $sql . "] [파라미터: " . print_r($params, true) . "]");
+        return false;
     }
 }
 
