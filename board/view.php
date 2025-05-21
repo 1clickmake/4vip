@@ -4,8 +4,16 @@ include_once CM_BOARD_PATH.'/board.lib.php';
 include_once CM_PATH.'/head.php';
 
 if ($boardNum <= 0) {
-    echo "<script>alert('유효하지 않은 게시글입니다.'); location.href='list.php?board={$board}';</script>";
-    exit;
+	alert('유효하지 않은 게시글입니다.');
+}
+
+//게시물 보기 접근 제한
+if($bo['view_lv'] > 0 ){
+	if(!$is_admin ){
+		if($is_guest || $member['user_lv'] < $bo['view_lv']){
+			alert('목록을 볼 권한이 없습니다.');
+		}
+	}
 }
 
 try {

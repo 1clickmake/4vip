@@ -9,6 +9,14 @@ if ($boardNum <= 0) {
 }
 
 try {
+	
+	if (!$is_member) {
+		$stmt = $pdo->prepare("SELECT email FROM cm_board WHERE board_id = :board_id AND board_num = :board_num");
+		$stmt->execute(['board_id' => $board_id, 'board_num' => $board_num]);
+		$post = $stmt->fetch(PDO::FETCH_ASSOC);
+		// 세션 또는 GET/POST로 전달된 이메일 검증
+	}
+
     // 게시글 정보 가져오기
     $stmt = $pdo->prepare("SELECT * FROM cm_board WHERE board_id = :board_id AND board_num = :board_num");
 	$stmt->bindParam(':board_id', $boardId);

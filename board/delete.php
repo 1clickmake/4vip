@@ -45,8 +45,12 @@ try {
             }
         }
     }
-
+	
     // 6. 게시글 삭제
+	/*에디터 이미지 삭제*/
+	$editorDir = CM_DATA_PATH.'/board/'.$boardId.'/editor';
+	process_editor_image_delete('cm_board', 'content', ['board_id' => $boardId, 'board_num' => $boardNum], $editorDir);
+	
     if (process_data_delete('cm_board', ['board_id' => $boardId, 'board_num' => $boardNum]) === false) {
         throw new Exception("게시글 삭제 실패");
     }

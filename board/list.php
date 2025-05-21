@@ -4,6 +4,15 @@ include_once CM_BOARD_PATH.'/board.lib.php';
 $cm_title = $bo['board_name'];
 include_once CM_PATH.'/head.php';
 
+//게시물 리스트 접근 제한
+if($bo['list_lv'] > 0 ){
+	if(!$is_admin ){
+		if($is_guest || $member['user_lv'] < $bo['list_lv']){
+			alert('목록을 볼 권한이 없습니다.');
+		}
+	}
+}
+
 $result = sql_board_list( 'cm_board', [
     'page' => $_GET['page'] ?? 1,
     'per_page' => 10,

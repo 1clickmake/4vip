@@ -13,7 +13,7 @@ include_once CM_ADMIN_PATH.'/admin.head.php';
 				<label for="groupId" class="form-label">템플릿 선택</label>
 				<select class="form-select" id="templateId" name="template_id" required>
 					<?php
-					$folderDirectory = CM_PATH.'/template';
+					$folderDirectory = CM_PATH.'/template/community';
 					$folders = getSubdirectories($folderDirectory);
 					foreach ($folders as $folder) {
 					?>
@@ -21,6 +21,20 @@ include_once CM_ADMIN_PATH.'/admin.head.php';
 					<?php } ?>
 				</select>
 			</div>
+			
+			<div class="mb-3">
+				<label for="groupId" class="form-label">쇼핑몰 템플릿 선택</label>
+				<select class="form-select" id="shoptemplateId" name="shop_template_id" required>
+					<?php
+					$folderDirectory = CM_PATH.'/template/shop';
+					$folders = getSubdirectories($folderDirectory);
+					foreach ($folders as $folder) {
+					?>
+					<option value="<?php echo $folder;?>"><?php echo $folder;?></option>
+					<?php } ?>
+				</select>
+			</div>
+			
 			<button type="submit" class="btn btn-primary">저장</button>
 		  </form>
 		</div>

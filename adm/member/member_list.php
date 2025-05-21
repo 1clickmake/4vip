@@ -24,7 +24,7 @@ $page = $result['current_page'];
     <!-- Main Content -->
     <div class="main-content shifted" id="mainContent">
         <div class="container-fluid">
-			<h2 class="admin-list-title"><h2><?php echo $cm_title;?></h2></h2>
+			<h2 class="admin-list-title"><?php echo $cm_title;?></h2>
 			<div class="table-responsive">
 				<table class="table table-sm table-striped table-bordered align-middle" style="min-width:1200px;">
 					<thead class="table-dark  text-center">
@@ -34,28 +34,38 @@ $page = $result['current_page'];
 							<th scope="col">이름</th>
 							<th scope="col">이메일</th>
 							<th scope="col">휴대폰 번호</th>
+							<th scope="col">레벨</th>
+							<th scope="col">포인트</th>
 							<th scope="col">가입일</th>
 							<th scope="col">관리</th>
 						</tr>
 					</thead>
 					<tbody>
-						<?php 
-						foreach ($result['list'] as $list) { 
-						?>
-						<tr class=" text-center">
-							<th scope="row">1</th>
-							<td><?php echo $list['user_id'];?></td>
-							<td><?php echo $list['user_name'];?></td>
-							<td><?php echo $list['user_email'];?></td>
-							<td><?php echo $list['user_hp'];?></td>
-							<td><?php echo get_formatDate($list['created_at'], 'Y-m-d h:i:s');?></td>
-							<td>
-								<a href="#" class="btn btn-sm btn-primary me-2">수정</a>
-								<button type="button" class="btn btn-sm btn-danger">삭제</button>
-							</td>
-						</tr>
+						<?php if (empty($result)){ ?>
+							<tr>
+								<td colspan="6" class="text-center">포인트 내역이 없습니다.</td>
+							</tr>
+						<?php } else { ?>
+							<?php 
+							$start_number = $result['total_rows'] - ($page - 1) * $options['per_page'];
+							foreach ($result['list'] as $index => $list) {
+								$list_no = $start_number - $index;
+							?>
+							<tr class=" text-center">
+								<td><?php echo $list_no;?></td>
+								<td><?php echo $list['user_id'];?></td>
+								<td><?php echo $list['user_name'];?></td>
+								<td><?php echo $list['user_email'];?></td>
+								<td><?php echo $list['user_hp'];?></td>
+								<td><?php echo $list['user_lv'];?></td>
+								<td><?php echo number_format($list['user_point']);?></td>
+								<td><?php echo get_formatDate($list['created_at'], 'Y-m-d h:i:s');?></td>
+								<td>
+									<a href="member_form.php?user_no=<?php echo $list['user_no'];?>" class="btn btn-sm btn-primary me-2">수정</a>
+								</td>
+							</tr>
+							<?php } ?>
 						<?php } ?>
-						
 						</tbody>
 				</table>
 			</div>

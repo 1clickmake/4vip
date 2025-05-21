@@ -12,4 +12,5 @@ define('CM_BOARD_PATH', CM_PATH.'/board');
 define('CM_BOARD_URL', CM_URL.'/board');
 define('CM_MB_PATH', CM_PATH.'/member');
 define('CM_MB_URL', CM_URL.'/member');
+define('CM_PLUGIN_PATH', CM_PATH.'/plugin');
 

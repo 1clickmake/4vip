@@ -20,6 +20,12 @@ define('CM_URL', $domain_url);
 require_once(CM_PATH.'/config.php');//상수 선언
 require_once(CM_LIB_PATH.'/common.lib.php'); // 공통 라이브러리
 
+
+//관리자 환경설정
+$sql = "SELECT * FROM `cm_config` WHERE `id` = :id";
+$params_is = [':id' => 1]; // ':이름' => 값 형태
+$config = sql_fetch($sql, $params_is);
+
 // common.php 파일을 수정할 필요가 없도록 확장합니다.
 $extend_file = array();
 $tmp = dir(CM_EXTEND_PATH);
@@ -39,30 +45,72 @@ if(!empty($extend_file) && is_array($extend_file)) {
 }
 unset($extend_file);
 
-//관리자 환경설정
-$sql = "SELECT * FROM `cm_config` WHERE `id` = :id";
-$params = [':id' => 1]; // ':이름' => 값 형태
-$config = sql_fetch($sql, $params);
 
+//회원설정
 $is_admin = false;
 $is_member = false;
+$is_guest = true;
 if(isset($_SESSION['user_id']) && $_SESSION['user_id'] !==""){
 	$sql = "SELECT * FROM `cm_users` WHERE `user_id` = :user_id";
 	$params = [':user_id' => $_SESSION['user_id']]; // ':이름' => 값 형태
 	$member = sql_fetch($sql, $params);
 	
+	$is_guest = false;
 	$is_member = true;
 	
 	if($config['admin_id'] == $member['user_id']){
-		$is_admin = true;
+		$is_admin = 'super';
 	}
 }
 
+if ($is_admin != 'super') {
+    // 접근가능 IP
+    $ip_access = trim($config['ip_access']);
+    if ($ip_access) {
+        $is_ip_access = false;
+        $pattern = explode("\n", $ip_access);
+        for ($i=0; $i<count($pattern); $i++) {
+            $pattern[$i] = trim($pattern[$i]);
+            if (empty($pattern[$i]))
+                continue;
+
+            $pattern[$i] = str_replace(".", "\.", $pattern[$i]);
+            $pattern[$i] = str_replace("+", "[0-9\.]+", $pattern[$i]);
+            $pat = "/^{$pattern[$i]}$/";
+            $is_ip_access = preg_match($pat, $_SERVER['REMOTE_ADDR']);
+            if ($is_ip_access)
+                break;
+        }
+        if (!$is_ip_access)
+            die ("<meta charset=utf-8>접근이 가능하지 않습니다.");
+    }
+
+    // 접근차단 IP
+    $is_ip_block = false;
+    $pattern = explode("\n", trim($config['ip_block']));
+    for ($i=0; $i<count($pattern); $i++) {
+        $pattern[$i] = trim($pattern[$i]);
+        if (empty($pattern[$i]))
+            continue;
+
+        $pattern[$i] = str_replace(".", "\.", $pattern[$i]);
+        $pattern[$i] = str_replace("+", "[0-9\.]+", $pattern[$i]);
+        $pat = "/^{$pattern[$i]}$/";
+        $is_ip_block = preg_match($pat, $_SERVER['REMOTE_ADDR']);
+        if ($is_ip_block)
+            die ("<meta charset=utf-8>접근 불가합니다.");
+    }
+	
+	// 방문자 기록
+	include_once(CM_LIB_PATH.'/visit_functions.php');
+	get_visit();
+}
+
 //템플릿 관련 상수
-define('CM_TEMPLATE_PATH', CM_PATH.'/template/'.$config['template_id']);
-define('CM_TEMPLATE_URL', CM_URL.'/template/'.$config['template_id']);
+define('CM_TEMPLATE_PATH', CM_PATH.'/template/community/'.$config['template_id']);
+define('CM_TEMPLATE_URL', CM_URL.'/template/community/'.$config['template_id']);
 
 //쇼핑몰 템플릿 상수
-define('CM_SHOP_TEMPLATE_PATH', CM_PATH.'/shop/template/'.$config['shop_template_id']);
-define('CM_SHOP_TEMPLATE_URL', CM_URL.'/shop/template/'.$config['shop_template_id']);
+define('CM_SHOP_TEMPLATE_PATH', CM_PATH.'/template/shop/'.$config['shop_template_id']);
+define('CM_SHOP_TEMPLATE_URL', CM_URL.'/template/shop/'.$config['shop_template_id']);
 ?>

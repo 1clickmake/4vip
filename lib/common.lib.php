@@ -143,6 +143,74 @@ function get_member(string $user_id){
 	}
 }
 
+
+//포인트 지급, 차감
+function get_UserPoint($user_id, $point, $description, $action) {
+	
+	global $pdo;
+	
+    if (empty($user_id) || $point <= 0 || empty($description) || !in_array($action, ['add', 'cut'])) {
+        throw new Exception("잘못된 입력입니다. 모든 필드를 확인해주세요.");
+    }
+
+    try {
+        // 트랜잭션 시작
+        $pdo->beginTransaction();
+
+        // 회원 존재 확인
+        $stmt = $pdo->prepare("SELECT user_point FROM cm_users WHERE user_id = :user_id");
+        $stmt->execute(['user_id' => $user_id]);
+        $user = $stmt->fetch();
+
+        if (!$user) {
+            throw new Exception("존재하지 않는 회원 아이디입니다.");
+        }
+
+        if ($action === 'add') {
+            // 포인트 지급: cm_point에 내역 추가 및 cm_users의 user_point 증가
+            $stmt = $pdo->prepare("INSERT INTO cm_point (user_id, point, description) VALUES (:user_id, :point, :description)");
+            $stmt->execute([
+                'user_id' => $user_id,
+                'point' => $point,
+                'description' => $description
+            ]);
+
+            $stmt = $pdo->prepare("UPDATE cm_users SET user_point = user_point + :point WHERE user_id = :user_id");
+            $stmt->execute([
+                'point' => $point,
+                'user_id' => $user_id
+            ]);
+        } elseif ($action === 'cut') {
+            // 포인트 차감: cm_point에서 해당 포인트 내역 삭제
+            $stmt = $pdo->prepare("DELETE FROM cm_point WHERE user_id = :user_id AND point = :point AND description = :description");
+            $stmt->execute([
+                'user_id' => $user_id,
+                'point' => $point,
+                'description' => $description
+            ]);
+			
+			$stmt = $pdo->prepare("UPDATE cm_users SET user_point = user_point - :point WHERE user_id = :user_id");
+            $stmt->execute([
+                'point' => $point,
+                'user_id' => $user_id
+            ]);
+
+            // 삭제된 행이 없으면 예외 발생
+            if ($stmt->rowCount() === 0) {
+                throw new Exception("삭제할 포인트 내역이 없습니다.");
+            }
+        }
+
+        // 트랜잭션 커밋
+        $pdo->commit();
+        return true;
+    } catch (Exception $e) {
+        // 오류 발생 시 롤백
+        $pdo->rollBack();
+        throw $e;
+    }
+}
+
 /**
  * 알림 메시지를 표시하고 페이지를 이동합니다.
  *
@@ -316,7 +384,7 @@ function process_file_delete(string $tableName, array $whereConditions): bool {
  * @param string $board 게시판 이름
  * @return string|false 저장된 이미지 URL 또는 실패 시 false
  */
-function process_editor_image_upload(array $fileInfo, string $board)
+function process_editor_image_upload(array $fileInfo, string $dataname)
 {
     // 업로드 오류 확인
     if (!isset($fileInfo['error']) || $fileInfo['error'] !== UPLOAD_ERR_OK) {
@@ -340,7 +408,13 @@ function process_editor_image_upload(array $fileInfo, string $board)
     $file_ext = strtolower(pathinfo($original_filename, PATHINFO_EXTENSION));
 
     // 저장 경로 설정
-    $upload_dir = CM_DATA_PATH . '/board/' . $board . '/editor/';
+	if($dataname == "popup"){
+		$upload_dir = CM_DATA_PATH . '/' . $dataname . '/';
+		$upload_url = CM_DATA_URL . '/' . $dataname ;
+	}else{
+		$upload_dir = CM_DATA_PATH . '/board/' . $dataname . '/editor/';
+		$upload_url = CM_DATA_URL . '/board/' . $dataname . '/editor';
+	}
 
     // 디렉토리 생성 (필요시)
     if (!file_exists($upload_dir) && !mkdir($upload_dir, 0777, true)) {
@@ -363,10 +437,70 @@ function process_editor_image_upload(array $fileInfo, string $board)
              return false;
         }
 
-        return CM_DATA_URL . '/board/' . $board . '/editor/' . $stored_filename;
+        return $upload_url . '/' . $stored_filename;
+		
     } else {
         error_log("업로드 오류: 파일 이동 실패");
         return false;
+    }
+}
+
+function process_editor_image_delete(string $tableName, string $tableCol, array $whereConditions, string $editorDir): array {
+    global $pdo;
+
+    try {
+        // WHERE 조건 생성
+        $whereClause = [];
+        $params = [];
+        foreach ($whereConditions as $field => $value) {
+            $whereClause[] = "`$field` = :$field";
+            $params[":$field"] = $value;
+        }
+        $whereSql = implode(' AND ', $whereClause);
+
+        // 게시물 콘텐츠 조회
+        $sql = "SELECT `$tableCol` FROM `$tableName` WHERE $whereSql";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        $row = $stmt->fetch();
+
+        if (!$row || empty($row[$tableCol])) {
+            return ['success' => true, 'message' => '콘텐츠가 없거나 게시물이 존재하지 않습니다.'];
+        }
+
+        // content에서 <img> 태그의 src 속성 추출
+        $content = $row[$tableCol];
+        $pattern = '/<img[^>]+src=["\'](.*?)["\']/i';
+        preg_match_all($pattern, $content, $matches);
+
+        $deletedFiles = [];
+        $errors = [];
+
+        // 추출된 이미지 경로 처리
+        if (!empty($matches[1])) {
+            foreach ($matches[1] as $imgSrc) {
+                // 절대 경로에서 파일 이름만 추출
+                $fileName = basename($imgSrc);
+                $filePath = rtrim($editorDir, '/') . '/' . $fileName;
+
+                // 파일이 존재하는지 확인하고 삭제
+                if (file_exists($filePath)) {
+                    if (unlink($filePath)) {
+                        $deletedFiles[] = $fileName;
+                    } else {
+                        $errors[] = "파일 삭제 실패: $fileName";
+                    }
+                }
+            }
+        }
+
+        if (empty($errors)) {
+            return ['success' => true, 'message' => '이미지 삭제 완료: ' . (empty($deletedFiles) ? '삭제된 파일 없음' : implode(', ', $deletedFiles))];
+        } else {
+            return ['success' => false, 'message' => '일부 이미지 삭제 실패: ' . implode(', ', $errors)];
+        }
+    } catch (Exception $e) {
+        return ['success' => false, 'message' => '이미지 삭제 중 오류 발생: ' . $e->getMessage()];
     }
 }
 

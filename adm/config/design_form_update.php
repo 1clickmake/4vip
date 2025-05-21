@@ -4,9 +4,11 @@ include_once './_common.php';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $template_id = filter_input(INPUT_POST, 'template_id', FILTER_SANITIZE_SPECIAL_CHARS);
+	$shop_template_id = filter_input(INPUT_POST, 'shop_template_id', FILTER_SANITIZE_SPECIAL_CHARS);
    
 	$DataToUpdate = [
-		'template_id' => $template_id
+		'template_id' => $template_id,
+		'shop_template_id' => $shop_template_id
 	];
 	// 업데이트 조건 where
 	$where = [

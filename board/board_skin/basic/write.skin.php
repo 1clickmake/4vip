@@ -9,22 +9,30 @@ if (!defined('_CMBOARD_')) exit; // 개별 페이지 접근 불가
         <input type="hidden" name="board_id" value="<?php echo $boardId;?>">
         <input type="hidden" name="board_num" value="<?php echo $boardNum ?? '';?>">
         <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response">
-        
-        <div class="mb-3">
-            <label for="email" class="form-label">이메일</label>
-            <input type="email" class="form-control" id="email" name="email" value="<?php echo htmlspecialchars($write['email'] ?? ''); ?>" required>
-        </div>
-        
-        <div class="mb-3">
-            <label for="name" class="form-label">이름</label>
-            <input type="text" class="form-control" id="name" name="name" value="<?php echo htmlspecialchars($write['name'] ?? ''); ?>" required>
-        </div>
-        
-        <div class="mb-3">
-            <label for="password" class="form-label">비밀번호 (변경시에만 입력)</label>
-            <input type="password" class="form-control" id="password" name="password">
-            <small class="text-muted">비밀번호를 변경하지 않으려면 비워두세요.</small>
-        </div>
+        <input type="hidden" name="user_id" value="<?php echo htmlspecialchars($member['user_id'] ?? ''); ?>">
+        <?php if ($is_member): // 회원인 경우 이메일, 이름, 비밀번호를 hidden으로 처리 ?>
+            <input type="hidden" name="email" value="<?php echo htmlspecialchars($member['user_email'] ?? ''); ?>">
+            <input type="hidden" name="name" value="<?php echo htmlspecialchars($member['user_name'] ?? ''); ?>">
+            <input type="hidden" name="password" value="<?php echo isset($member['user_password']) ? $member['user_password'] : ''; ?>">
+        <?php else: // 비회원인 경우 입력 폼 표시 ?>
+            <div class="mb-3">
+                <label for="email" class="form-label">이메일</label>
+                <input type="email" class="form-control" id="email" name="email" value="<?php echo htmlspecialchars($write['email'] ?? ''); ?>" required>
+            </div>
+            
+            <div class="mb-3">
+                <label for="name" class="form-label">이름</label>
+                <input type="text" class="form-control" id="name" name="name" value="<?php echo htmlspecialchars($write['name'] ?? ''); ?>" required>
+            </div>
+            
+            <div class="mb-3">
+                <label for="password" class="form-label"><?php echo isset($write) ? '비밀번호 (변경시에만 입력)' : '비밀번호'; ?></label>
+                <input type="password" class="form-control" id="password" name="password" <?php echo isset($write) ? '' : 'required'; ?>>
+                <?php if (isset($write)): ?>
+                <small class="text-muted">비밀번호를 변경하지 않으려면 비워두세요.</small>
+                <?php endif; ?>
+            </div>
+        <?php endif; ?>
         
         <div class="mb-3">
             <label for="title" class="form-label">제목</label>
@@ -93,6 +101,8 @@ if (!defined('_CMBOARD_')) exit; // 개별 페이지 접근 불가
 const recaptchaSiteKey = '<?php echo $recaptcha_site; ?>';
 document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('writeForm');
+	
+	<?php if($recaptcha_site && $recaptcha_secret){?>
     form.addEventListener('submit', function (e) {
         e.preventDefault(); // 폼 제출 막기
         grecaptcha.ready(function() {
@@ -102,6 +112,7 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
     });
+	<?php } ?>
 
     const container = document.getElementById('file-container');
     const addButton = document.getElementById('add-file');
@@ -144,7 +155,7 @@ $(document).ready(function() {
                     data.append('board_id', $('input[name="board_id"]').val());
 
                     $.ajax({
-                        url: '<?php echo CM_BOARD_URL;?>/summernote_upload.php',
+                        url: '<?php echo CM_URL;?>/summernote/summernote_upload.php',
                         method: 'POST',
                         data: data,
                         contentType: false,
@@ -166,7 +177,3 @@ $(document).ready(function() {
     });
 });
 </script>
-
-<?php
-// reCAPTCHA 검증 코드는 write_update.php 파일로 이동
-?>

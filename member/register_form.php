@@ -1,11 +1,21 @@
 <?php
 include_once('./_common.php');
 
-$cm_title = '회원가입/수정';
+$w = isset($_GET['w']) ? $_GET['w'] : '';
+
+$update = false;
+$cm_title = '회원가입';
+
+if ($w == 'update') {
+	$update = true;
+    $cm_title = '회원정보 수정';
+}
+
 include_once(CM_PATH.'/head.php');
 
-//로그인 스킨
+//회원가입/수정 스킨
 $action = CM_MB_URL."/register_form_update.php";
 include_once(CM_MB_PATH.'/member_skin/basic/register_form.skin.php');
 
-include_once(CM_PATH.'/tail.php');
+include_once(CM_PATH.'/tail.php'); 
+?> 

@@ -1,152 +1,243 @@
 <?php
 if (!defined('_CMBOARD_')) exit; // 개별 페이지 접근 불가
 ?>
-<div class="container-fluid d-flex justify-content-center align-items-center" style="min-height: 100vh;">
-    <div class="card shadow-lg p-4" style="max-width: 500px; width: 100%; border-radius: 15px;">
-        <div class="card-body">
-            <h3 class="text-center mb-4" style="color: #333; font-weight: 600;">회원가입</h3>
-            <form id="registerForm"  method="post" enctype="multipart/form-data" autocomplete="off">
-				<input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response">
-                <div class="mb-3">
-                    <label for="user_id" class="form-label" style="color: #555;">아이디</label>
-                    <input type="text" class="form-control" id="user_id" name="user_id" placeholder="아이디를 입력하세요" required autofocus>
-                    <div id="useridError" class="form-text text-danger"></div>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+			
+			<?php if($update){?>
+            <!-- 비밀번호 확인 모달 -->
+            <div class="modal fade" id="passwordModal" tabindex="-1" aria-labelledby="passwordModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="passwordModalLabel">비밀번호 확인</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="passwordCheckForm">
+                                <div class="mb-3">
+                                    <label for="current_password" class="form-label">현재 비밀번호</label>
+                                    <input type="password" class="form-control" id="current_password" name="current_password" required>
+                                </div>
+                                <div class="text-end">
+                                    <button type="submit" class="btn btn-primary">확인</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                 </div>
-				<div class="mb-3">
-                    <label for="user_name" class="form-label" style="color: #555;">이름</label>
-                    <input type="text" class="form-control" id="user_name" name="user_name" placeholder="이름을 입력하세요" required autofocus>
-                    <div id="usernameError" class="form-text text-danger"></div>
-                </div>
-                <div class="mb-3">
-                    <label for="user_password" class="form-label" style="color: #555;">비밀번호</label>
-                    <input type="password" class="form-control" id="user_password" name="user_password" placeholder="비밀번호를 입력하세요" required>
-                    <div id="passwordError" class="form-text text-danger"></div>
-                </div>
-                <div class="mb-3">
-                    <label for="passwordConfirm" class="form-label" style="color: #555;">비밀번호 확인</label>
-                    <input type="password" class="form-control" id="passwordConfirm" name="password_confirm" placeholder="비밀번호를 다시 입력하세요" required>
-                    <div id="passwordConfirmError" class="form-text text-danger"></div>
-                </div>
-                <div class="mb-3">
-                    <label for="user_email" class="form-label" style="color: #555;">이메일</label>
-                    <input type="email" class="form-control" id="user_email" name="user_email" placeholder="이메일을 입력하세요" required>
-                    <div id="emailError" class="form-text text-danger"></div>
-                </div>
-                <div class="mb-3">
-                    <label for="user_hp" class="form-label" style="color: #555;">연락처</label>
-                    <input type="tel" class="form-control" id="user_hp" name="user_hp" placeholder="연락처를 입력하세요 (예: 01012345678 (숫자만))">
-                    <div id="phoneError" class="form-text text-danger"></div>
-                </div>
-				<div class="text-danger" id="generalError"></div>
-                <button type="submit" class="btn btn-primary w-100" style="border-radius: 10px; padding: 10px; font-weight: 500;">가입하기</button>
-            </form>
-            <div class="text-center mt-3">
-                <p class="mb-0" style="color: #777; font-size: 0.9rem;">이미 계정이 있으신가요? <a href="/login" class="text-decoration-none" style="color: #007bff;">로그인</a></p>
+            </div>
+			<?php } ?>
+
+            <!-- 회원정보 수정 폼 -->
+            <div id="updateForm" <?php if($update){?> style="display:none;"<?php } ?>>
+                <h2 class="text-center mb-4"><?php echo $cm_title;?></h2>
+                <form id="registerForm" method="post" action="./register_form_update.php">
+					<input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response">
+                    <input type="hidden" name="w" value="<?php echo $w;?>">
+                    
+                    <div class="mb-3">
+						<label for="user_id" class="form-label" style="color: #555;">아이디</label>
+						<input type="text" class="form-control" id="user_id" name="user_id" value="<?php echo $member['user_id'] ?? '';?>" placeholder="아이디를 입력하세요" required autofocus <?php if($update){?>readonly<?php } ?>>
+						<div id="user_idError" class="form-text text-danger"></div>
+					</div>
+                    <div class="mb-3">
+                        <label for="user_name" class="form-label">이름</label>
+                        <input type="text" class="form-control" id="user_name" name="user_name" value="<?php echo $member['user_name'] ?? ''; ?>" required>
+                        <div id="user_nameError" class="form-text text-danger"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="user_password" class="form-label">새 비밀번호</label>
+                        <input type="password" class="form-control" id="user_password" name="user_password">
+                        <?php if($update){?><small class="text-muted">변경하지 않으려면 비워두세요</small><?php } ?>
+                        <div id="user_passwordError" class="form-text text-danger"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password_confirm" class="form-label">새 비밀번호 확인</label>
+                        <input type="password" class="form-control" id="password_confirm" name="password_confirm">
+                        <div id="password_confirmError" class="form-text text-danger"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="user_email" class="form-label">이메일</label>
+                        <input type="email" class="form-control" id="user_email" name="user_email" value="<?php echo $member['user_email'] ?? ''; ?>" required>
+                        <div id="user_emailError" class="form-text text-danger"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="user_hp" class="form-label">휴대폰번호</label>
+                        <input type="tel" class="form-control" id="user_hp" name="user_hp" value="<?php echo $member['user_hp'] ?? ''; ?>">
+                        <div id="user_hpError" class="form-text text-danger"></div>
+                    </div>
+
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary"><?php if($update) echo '수정'; else echo '가입';?></button>
+                        <a href="<?php echo CM_URL ?>" class="btn btn-secondary">취소</a>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 </div>
+
 <script>
 const recaptchaSiteKey = '<?php echo $recaptcha_site; ?>';
 
 $(document).ready(function() {
-    // 폼 제출 이벤트 처리
-    $('#registerForm').on('submit', function(e) {
-        e.preventDefault(); // 기본 폼 제출 동작 방지
+	
+<?php if($update){?>
+    // 페이지 로드시 비밀번호 확인 모달 표시
+    var passwordModal = new bootstrap.Modal(document.getElementById('passwordModal'));
+    passwordModal.show();
+
+    // 비밀번호 확인 폼 제출
+    $('#passwordCheckForm').on('submit', function(e) {
+        e.preventDefault();
         
+        $.ajax({
+            url: './password_check.php',
+            type: 'POST',
+            data: {
+                user_id: '<?php echo $member['user_id'] ?>',
+                user_password: $('#current_password').val()
+            },
+            dataType: 'json',
+            success: function(response) {
+                if (response.status === 'success') {
+                    passwordModal.hide();
+                    $('#updateForm').show();
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('비밀번호 확인 AJAX 오류:', error, xhr.responseText);
+                alert('서버 오류가 발생했습니다.');
+            }
+        });
+    });
+
+    // 회원정보 수정 폼 제출
+    $('#registerForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        if ($('#user_password').val() !== $('#password_confirm').val()) {
+            $('#password_confirmError').text('비밀번호가 일치하지 않습니다.');
+            return;
+        }
+
         // reCAPTCHA 토큰 가져오기
         grecaptcha.ready(function() {
             grecaptcha.execute(recaptchaSiteKey, {action: 'submit'}).then(function(token) {
                 document.getElementById('g-recaptcha-response').value = token;
                 
-                // 오류 메시지 초기화
-                $('#useridError, #usernameError, #passwordError, #passwordConfirmError, #emailError, #phoneError, #generalError').text('');
-                
-                // 폼 데이터 수집
-                const formData = $('#registerForm').serialize();
-                
-                // 비밀번호 일치 여부 확인
-                const password = $('#user_password').val();
-                const passwordConfirm = $('#passwordConfirm').val();
-                
-                if (password !== passwordConfirm) {
-                    $('#passwordConfirmError').text('비밀번호가 일치하지 않습니다'); 
-                    return;
-                }
-                
-                // Ajax 요청 보내기
                 $.ajax({
-                    url: 'register_form_update.php',
+                    url: $('#registerForm').attr('action'),
                     type: 'POST',
-                    data: formData,
+                    data: $('#registerForm').serialize(),
                     dataType: 'json',
                     success: function(response) {
                         if (response.status === 'success') {
-                            // 회원가입 성공
-                            alert(response.message);
-                            window.location.href = '<?php echo CM_URL?>'; // 로그인 페이지로 리다이렉트
+                            alert('회원정보가 수정되었습니다.');
+                            location.href = '<?php echo CM_URL ?>';
                         } else {
-                            // 회원가입 실패 시 해당 필드에 오류 메시지 표시
-                            switch (response.field) {
-                                case 'user_id':
-                                    $('#useridError').text(response.message);
-                                    break;
-                                case 'user_name':
-                                    $('#usernameError').text(response.message);
-                                    break;
-                                case 'user_password':
-                                    $('#passwordError').text(response.message);
-                                    break;
-                                case 'password_confirm':
-                                    $('#passwordConfirmError').text(response.message);
-                                    break;
-                                case 'user_email':
-                                    $('#emailError').text(response.message);
-                                    break;
-                                case 'user_hp':
-                                    $('#phoneError').text(response.message);
-                                    break;
-                                default:
-                                    $('#generalError').text(response.message);
+                            // 오류 메시지 표시
+                            if (response.field && $('#' + response.field + 'Error').length) {
+                                $('#' + response.field + 'Error').text(response.message);
+                            } else {
+                                alert(response.message || '회원정보 수정에 실패했습니다.');
                             }
                         }
                     },
                     error: function(xhr, status, error) {
-                        $('#generalError').text('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
-                        console.error('Ajax 요청 오류:', error);
+                        console.error('회원정보 수정 AJAX 오류:', error, xhr.responseText);
+                        alert('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+                    }
+                });
+            });
+        });
+    });
+<?php } else { ?>
+
+    // 폼 제출 이벤트 처리
+    $('#registerForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        // 오류 메시지 초기화
+        $('#user_idError, #user_nameError, #user_passwordError, #password_confirmError, #user_emailError, #user_hpError').text('');
+        
+        // 비밀번호 일치 여부 확인
+        const password = $('#user_password').val();
+        const passwordConfirm = $('#password_confirm').val();
+        
+        if (password !== passwordConfirm) {
+            $('#password_confirmError').text('비밀번호가 일치하지 않습니다');
+            return;
+        }
+
+        // reCAPTCHA 토큰 가져오기
+        grecaptcha.ready(function() {
+            grecaptcha.execute(recaptchaSiteKey, {action: 'submit'}).then(function(token) {
+                document.getElementById('g-recaptcha-response').value = token;
+                
+                // Ajax 요청 보내기
+                $.ajax({
+                    url: $('#registerForm').attr('action'),
+                    type: 'POST',
+                    data: $('#registerForm').serialize(),
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            alert('회원가입이 완료되었습니다.');
+                            window.location.href = '<?php echo CM_URL?>';
+                        } else {
+                            // 오류 메시지 표시
+                            if (response.field && $('#' + response.field + 'Error').length) {
+                                $('#' + response.field + 'Error').text(response.message);
+                            } else {
+                                alert(response.message || '회원가입에 실패했습니다.');
+                            }
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('회원가입 AJAX 오류:', error, xhr.responseText);
+                        alert('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
                     }
                 });
             });
         });
     });
     
-    // 실시간 입력 검증 (선택 사항)
+    // 실시간 입력 검증
     $('#user_id').on('blur', function() {
         const userId = $(this).val();
         if (userId.length < 4) {
-            $('#useridError').text('아이디는 최소 4자 이상이어야 합니다');
+            $('#user_idError').text('아이디는 최소 4자 이상이어야 합니다');
         } else {
-            $('#useridError').text('');
+            $('#user_idError').text('');
         }
     });
     
     $('#user_password').on('blur', function() {
         const password = $(this).val();
-        if (password.length < 3) {
-            $('#passwordError').text('비밀번호는 최소 3자 이상이어야 합니다');
+        if (password.length < 8) { // 서버와 동일하게 8자로 수정
+            $('#user_passwordError').text('비밀번호는 최소 8자 이상이어야 합니다');
         } else {
-            $('#passwordError').text('');
+            $('#user_passwordError').text('');
         }
     });
     
-    $('#passwordConfirm').on('blur', function() {
+    $('#password_confirm').on('blur', function() {
         const password = $('#user_password').val();
         const passwordConfirm = $(this).val();
         
         if (password !== passwordConfirm) {
-            $('#passwordConfirmError').text('비밀번호가 일치하지 않습니다');
+            $('#password_confirmError').text('비밀번호가 일치하지 않습니다');
         } else {
-            $('#passwordConfirmError').text('');
+            $('#password_confirmError').text('');
         }
     });
     
@@ -155,10 +246,11 @@ $(document).ready(function() {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         
         if (!emailRegex.test(email)) {
-            $('#emailError').text('유효한 이메일 주소를 입력해주세요');
+            $('#user_emailError').text('유효한 이메일 주소를 입력해주세요');
         } else {
-            $('#emailError').text('');
+            $('#user_emailError').text('');
         }
     });
+	<?php } ?>
 });
 </script>

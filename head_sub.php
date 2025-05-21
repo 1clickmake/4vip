@@ -22,8 +22,11 @@ if(isset($cm_title) && $cm_title !== ""){
 		}
 		?>
 		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+		<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
 		<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script><!-- Summernote JS -->
-		<script src="https://www.google.com/recaptcha/api.js?render=6LdVZjwrAAAAAO5TocN0rSdbTWvi6_5xWNReljeE"></script>
+		<?php if($recaptcha_site && $recaptcha_secret){ //구를 리캡챠?>
+		<script src="https://www.google.com/recaptcha/api.js?render=<?php echo $recaptcha_site;?>"></script>
+		<?php } ?>
 		<?php
 		if (defined('CM_IS_ADMIN')) {
 			include_once CM_ADMIN_PATH.'/add/add.script.head.php';
