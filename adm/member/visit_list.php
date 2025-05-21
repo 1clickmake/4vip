@@ -15,17 +15,32 @@ $ip_address = !empty($_POST['ip_address']) ? $_POST['ip_address'] : null;
 // 삭제 처리
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_by_date'])) {
     try {
+        global $pdo;
+        
+        // 기본 WHERE 조건 구성
+        $whereClause = "visit_time BETWEEN :start_date AND :end_date";
+        $params = [
+            ':start_date' => $start_date,
+            ':end_date' => $end_date . ' 23:59:59'
+        ];
+
+        // IP 주소가 입력된 경우 조건 추가
         if ($ip_address) {
-            // IP 주소가 입력된 경우
-            $stmt = $pdo->prepare("DELETE FROM cm_visit WHERE visit_time BETWEEN ? AND ? AND ip_address = ?");
-            $stmt->execute([$start_date, $end_date . ' 23:59:59', $ip_address]);
-        } else {
-            // IP 주소가 입력되지 않은 경우
-            $stmt = $pdo->prepare("DELETE FROM cm_visit WHERE visit_time BETWEEN ? AND ?");
-            $stmt->execute([$start_date, $end_date . ' 23:59:59']);
+            $whereClause .= " AND ip_address = :ip_address";
+            $params[':ip_address'] = $ip_address;
         }
-        $delete_message = "선택한 조건의 방문자 기록이 삭제되었습니다.";
-    } catch (PDOException $e) {
+
+        // DELETE 쿼리 실행
+        $sql = "DELETE FROM cm_visit WHERE " . $whereClause;
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        
+        if ($stmt->rowCount() > 0) {
+            $delete_message = "선택한 조건의 방문자 기록이 삭제되었습니다.";
+        } else {
+            $delete_message = "삭제할 데이터가 없습니다.";
+        }
+    } catch (Exception $e) {
         $delete_message = "삭제 실패: " . $e->getMessage();
     }
 }
