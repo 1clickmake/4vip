@@ -1,48 +1,17 @@
 <?php
 include_once './_common.php';
+define('_ADMIN_INDEX_', true);
 include_once CM_ADMIN_PATH.'/admin.head.php';
-
-// 최근 7일간의 방문자 통계 조회
-$sql = "SELECT 
-            DATE(visit_time) as visit_date,
-            COUNT(*) as visit_count
-        FROM cm_visit
-        WHERE visit_time >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
-        GROUP BY DATE(visit_time)
-        ORDER BY visit_date ASC";
-$result = sql_all_list($sql);
-
-$visit_dates = [];
-$visit_counts = [];
-$total_visits = 0;
-
-if ($result) {
-    foreach ($result as $row) {
-        $visit_dates[] = date('m/d', strtotime($row['visit_date']));
-        $visit_counts[] = (int)$row['visit_count'];
-        $total_visits += $row['visit_count'];
-    }
-}
-
-// 오늘 방문자 수
-$today_sql = "SELECT COUNT(*) as cnt FROM cm_visit WHERE DATE(visit_time) = CURDATE()";
-$today_result = sql_fetch($today_sql);
-$today_visits = $today_result ? $today_result['cnt'] : 0;
-
-// 어제 방문자 수
-$yesterday_sql = "SELECT COUNT(*) as cnt FROM cm_visit WHERE DATE(visit_time) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)";
-$yesterday_result = sql_fetch($yesterday_sql);
-$yesterday_visits = $yesterday_result ? $yesterday_result['cnt'] : 0;
 ?>
 
     <!-- Main Content -->
     <div class="main-content shifted" id="mainContent">
         <div class="container-fluid">
-            <h2 class="mb-4">대시보드</h2>
+            <h5 class="fw-bold">DASABOARD</h5>
             
             <!-- 통계 카드 -->
             <div class="row mb-4">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="card bg-primary text-white">
                         <div class="card-body">
                             <h5 class="card-title">총 방문자</h5>
@@ -50,7 +19,7 @@ $yesterday_visits = $yesterday_result ? $yesterday_result['cnt'] : 0;
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="card bg-success text-white">
                         <div class="card-body">
                             <h5 class="card-title">오늘 방문자</h5>
@@ -58,7 +27,7 @@ $yesterday_visits = $yesterday_result ? $yesterday_result['cnt'] : 0;
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="card bg-info text-white">
                         <div class="card-body">
                             <h5 class="card-title">어제 방문자</h5>
@@ -66,60 +35,137 @@ $yesterday_visits = $yesterday_result ? $yesterday_result['cnt'] : 0;
                         </div>
                     </div>
                 </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">어제 게시물</h5>
+                            <h2 class="card-text"><?php echo number_format($yesterday_posts);?></h2>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <!-- 방문자 통계 그래프 -->
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">최근 7일간 방문자 통계</h5>
-                    <canvas id="visitChart"></canvas>
+            <div class="row">
+                <!-- 좌측 섹션 -->
+                <div class="col-md-6">
+                    <!-- 최근 7일간 방문자 통계 그래프 -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">최근 7일간 방문자 통계</h5>
+                            <canvas id="visitChart" style="height: 300px;"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- 최근 가입 회원 -->
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">최근 가입 회원</h5>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>아이디</th>
+                                            <th>이름</th>
+                                            <th>이메일</th>
+                                            <th>가입일</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php
+                                        // 최근 가입 회원 10명 조회
+                                        $sql = "SELECT user_id, user_name, user_email, created_at 
+                                               FROM cm_users 
+                                               ORDER BY created_at DESC 
+                                               LIMIT 10";
+                                        $latest_members = sql_all_list($sql);
+
+                                        if ($latest_members) {
+                                            foreach ($latest_members as $member) {
+                                                ?>
+                                                <tr>
+                                                    <td><?php echo htmlspecialchars($member['user_id']); ?></td>
+                                                    <td><?php echo htmlspecialchars($member['user_name']); ?></td>
+                                                    <td class="text-truncate" style="max-width: 200px;">
+                                                        <?php echo htmlspecialchars($member['user_email']); ?>
+                                                    </td>
+                                                    <td><?php echo date('Y-m-d H:i', strtotime($member['created_at'])); ?></td>
+                                                </tr>
+                                                <?php
+                                            }
+                                        } else {
+                                            echo '<tr><td colspan="4" class="text-center">가입된 회원이 없습니다.</td></tr>';
+                                        }
+                                        ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 우측 섹션 -->
+                <div class="col-md-6">
+                    <!-- 최근 7일간 시간대별 방문자 통계 -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">최근 7일간 시간대별 방문자 통계</h5>
+                            <canvas id="hourlyChart" style="height: 300px;"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- 최신 게시글 -->
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">최신 게시글</h5>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>게시판</th>
+                                            <th>작성자</th>
+                                            <th>제목</th>
+                                            <th>작성일</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php
+                                        // 최신 게시글 10개 조회
+                                        $sql = "SELECT board_num, board_id, name, title, reg_date 
+                                               FROM cm_board 
+                                               ORDER BY reg_date DESC 
+                                               LIMIT 10";
+                                        $latest_posts = sql_all_list($sql);
+
+                                        if ($latest_posts) {
+                                            foreach ($latest_posts as $post) {
+                                                ?>
+                                                <tr>
+                                                    <td><?php echo htmlspecialchars($post['board_id']); ?></td>
+                                                    <td><?php echo htmlspecialchars($post['name']); ?></td>
+                                                    <td class="text-truncate" style="max-width: 200px;">
+                                                        <a href="<?php echo get_board_url('view', $post['board_id'], $post['board_num']); ?>">
+                                                            <?php echo htmlspecialchars($post['title']); ?>
+                                                        </a>
+                                                    </td>
+                                                    <td><?php echo date('Y-m-d H:i', strtotime($post['reg_date'])); ?></td>
+                                                </tr>
+                                                <?php
+                                            }
+                                        } else {
+                                            echo '<tr><td colspan="4" class="text-center">등록된 게시글이 없습니다.</td></tr>';
+                                        }
+                                        ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const ctx = document.getElementById('visitChart').getContext('2d');
-        
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: <?php echo json_encode($visit_dates);?>,
-                datasets: [{
-                    label: '방문자 수',
-                    data: <?php echo json_encode($visit_counts);?>,
-                    borderColor: 'rgb(75, 192, 192)',
-                    tension: 0.1,
-                    fill: true,
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)'
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                    },
-                    title: {
-                        display: true,
-                        text: '일별 방문자 통계'
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            stepSize: 1
-                        }
-                    }
-                }
-            }
-        });
-    });
-    </script>
+    
     
 <?php
 include_once CM_ADMIN_PATH.'/admin.tail.php';

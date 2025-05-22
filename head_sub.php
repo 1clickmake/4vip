@@ -11,28 +11,67 @@ if(isset($cm_title) && $cm_title !== ""){
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title><?php echo $cm_site_title;?></title>
-		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css">
-		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
-		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css">
+		
 		<?php
 		if (defined('CM_IS_ADMIN')) {
 			include_once CM_ADMIN_PATH.'/add/add.stylesheet.php';
+			// 관리자/CSS 폴더 내 모든 CSS 파일 로드
+			$css_path = CM_ADMIN_PATH.'/css';
+			if (is_dir($css_path)) {
+				$css_files = glob($css_path.'/*.css');
+				if ($css_files) {
+					foreach ($css_files as $css_file) {
+						$css_url = str_replace(CM_ADMIN_PATH, CM_ADMIN_URL, $css_file);
+						echo '<link rel="stylesheet" href="'.$css_url.'?ver='.time().'">'."\n";
+					}
+				}
+			}
 		}else{
 			include_once CM_TEMPLATE_PATH.'/add/add.stylesheet.php';
+			// 템플릿/CSS 폴더 내 모든 CSS 파일 로드
+			$css_path = CM_TEMPLATE_PATH.'/css';
+			if (is_dir($css_path)) {
+				$css_files = glob($css_path.'/*.css');
+				if ($css_files) {
+					foreach ($css_files as $css_file) {
+						$css_url = str_replace(CM_TEMPLATE_PATH, CM_TEMPLATE_URL, $css_file);
+						echo '<link rel="stylesheet" href="'.$css_url.'?ver='.time().'">'."\n";
+					}
+				}
+			}
+		}
+
+
+		if (defined('CM_IS_ADMIN')) {
+			include_once CM_ADMIN_PATH.'/add/add.script.head.php';
+			// 관리자/JS 폴더 내 모든 JavaScript 파일 로드
+			$js_path = CM_ADMIN_PATH.'/js';
+			if (is_dir($js_path)) {
+				$js_files = glob($js_path.'/*.js');
+				if ($js_files) {
+					foreach ($js_files as $js_file) {
+						$js_url = str_replace(CM_ADMIN_PATH, CM_ADMIN_URL, $js_file);
+						echo '<script src="'.$js_url.'?ver='.time().'"></script>'."\n";
+					}
+				}
+			}
+		}else{
+			include_once CM_TEMPLATE_PATH.'/add/add.script.head.php';
+			// 템플릿/JS 폴더 내 모든 JavaScript 파일 로드
+			$js_path = CM_TEMPLATE_PATH.'/js';
+			if (is_dir($js_path)) {
+				$js_files = glob($js_path.'/*.js');
+				if ($js_files) {
+					foreach ($js_files as $js_file) {
+						$js_url = str_replace(CM_TEMPLATE_PATH, CM_TEMPLATE_URL, $js_file);
+						echo '<script src="'.$js_url.'?ver='.time().'"></script>'."\n";
+					}
+				}
+			}
 		}
 		?>
-		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-		<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
-		<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script><!-- Summernote JS -->
 		<?php if($recaptcha_site && $recaptcha_secret){ //구를 리캡챠?>
 		<script src="https://www.google.com/recaptcha/api.js?render=<?php echo $recaptcha_site;?>"></script>
 		<?php } ?>
-		<?php
-		if (defined('CM_IS_ADMIN')) {
-			include_once CM_ADMIN_PATH.'/add/add.script.head.php';
-		}else{
-			include_once CM_TEMPLATE_PATH.'/add/add.script.head.php';
-		}
-		?>
 	</head>
 	<body>

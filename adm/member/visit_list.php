@@ -8,9 +8,9 @@ include_once CM_ADMIN_PATH.'/admin.head.php';
 $default_start_date = date('Y-m-d', strtotime('-1 week'));
 $default_end_date = date('Y-m-d');
 
-$start_date = isset($_POST['start_date']) ? $_POST['start_date'] : $default_start_date;
-$end_date = isset($_POST['end_date']) ? $_POST['end_date'] : $default_end_date;
-$ip_address = !empty($_POST['ip_address']) ? $_POST['ip_address'] : null;
+$start_date = isset($_GET['start_date']) ? $_GET['start_date'] : $default_start_date;
+$end_date = isset($_GET['end_date']) ? $_GET['end_date'] : $default_end_date;
+$ip_address = !empty($_GET['ip_address']) ? $_GET['ip_address'] : null;
 
 // 삭제 처리
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_by_date'])) {
@@ -72,25 +72,34 @@ $options = [
     'conditions' => []
 ];
 
+// 정렬 처리
+$sort_field = $_GET['sort'] ?? 'visit_time';
+$sort_order = $_GET['order'] ?? 'DESC';
+
+// 정렬 가능한 필드 목록
+$sortable_fields = ['ip_address', 'visit_time', 'user_agent', 'referer', 'visit_count'];
+
+// 정렬 필드가 유효한지 확인
+if (in_array($sort_field, $sortable_fields)) {
+    $options['order_by'] = $sort_field . ' ' . $sort_order;
+}
+
 // 검색 조건이 있는 경우
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search_by_date'])) {
-    // 날짜 검색 조건
-    if (!empty($start_date) && !empty($end_date)) {
-        $options['conditions'][] = [
-            'field' => 'visit_time',
-            'operator' => 'BETWEEN',
-            'value' => [$start_date . ' 00:00:00', $end_date . ' 23:59:59']
-        ];
-    }
-    
-    // IP 주소 검색 조건
-    if (!empty($ip_address)) {
-        $options['conditions'][] = [
-            'field' => 'ip_address',
-            'operator' => 'LIKE',
-            'value' => $ip_address
-        ];
-    }
+if (!empty($start_date) && !empty($end_date)) {
+    $options['conditions'][] = [
+        'field' => 'visit_time',
+        'operator' => 'BETWEEN',
+        'value' => [$start_date . ' 00:00:00', $end_date . ' 23:59:59']
+    ];
+}
+
+// IP 주소 검색 조건
+if (!empty($ip_address)) {
+    $options['conditions'][] = [
+        'field' => 'ip_address',
+        'operator' => 'LIKE',
+        'value' => $ip_address . '%'
+    ];
 }
 
 $result = sql_list($options);
@@ -98,7 +107,7 @@ $total_pages = $result['total_pages'];
 $page = $result['current_page'];
 
 // 검색 결과 메시지
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search_by_date'])) {
+if (!empty($start_date) || !empty($end_date) || !empty($ip_address)) {
     if (empty($result['list'])) {
         $search_message = "검색 결과가 없습니다.";
     } else {
@@ -110,7 +119,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search_by_date'])) {
     <!-- Main Content -->
     <div class="main-content shifted" id="mainContent">
         <div class="container-fluid">
-			<h2 class="admin-list-title"><?php echo $cm_title;?></h2>
+			<h2 class="admin-list-title"><?php echo $cm_title;?></h2> 
 			
 			<!-- 방문자 통계 -->
 			<div class="card mb-4">
@@ -145,7 +154,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search_by_date'])) {
 							<?php echo $search_message; ?>
 						</div>
 					<?php endif; ?>
-					<form method="POST">
+					<form method="GET" id="searchForm">
 						<div class="row mb-3">
 							<div class="col-md-4">
 								<label for="start_date" class="form-label">시작 날짜</label>
@@ -162,8 +171,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search_by_date'])) {
 						</div>
 						<div class="row">
 							<div class="col-md-12 text-end">
-								<button type="submit" name="search_by_date" class="btn btn-primary me-2">검색</button>
-								<button type="submit" name="delete_by_date" class="btn btn-danger" onclick="return confirm('정말로 삭제하시겠습니까?');">삭제</button>
+								<button type="submit" class="btn btn-primary me-2">검색</button>
+								<button type="button" class="btn btn-danger me-2" onclick="confirmDelete()">삭제</button>
+								<?php if (!empty($start_date) || !empty($end_date) || !empty($ip_address)): ?>
+								<a href="<?php echo $_SERVER['PHP_SELF']; ?>" class="btn btn-secondary">전체보기</a>
+								<?php endif; ?>
 							</div>
 						</div>
 					</form>
@@ -176,11 +188,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search_by_date'])) {
 					<thead class="table-dark text-center">
 						<tr>
 							<th scope="col">ID</th>
-							<th scope="col">IP 주소</th>
-							<th scope="col">방문 시간</th>
-							<th scope="col">사용자 에이전트</th>
-							<th scope="col">참조 URL</th>
-							<th scope="col">방문 횟수</th>
+							<th scope="col" class="sortable" data-field="ip_address">
+								IP 주소 <i class="bi bi-arrow-down-up"></i>
+								<?php echo get_sort_icon($sort_field, $sort_order, 'ip_address'); ?>
+							</th>
+							<th scope="col" class="sortable" data-field="visit_time">
+								방문 시간 <i class="bi bi-arrow-down-up"></i>
+								<?php echo get_sort_icon($sort_field, $sort_order, 'visit_time'); ?>
+							</th>
+							<th scope="col" class="sortable" data-field="user_agent">
+								사용자 에이전트 <i class="bi bi-arrow-down-up"></i>
+								<?php echo get_sort_icon($sort_field, $sort_order, 'user_agent'); ?>
+							</th>
+							<th scope="col" class="sortable" data-field="referer">
+								참조 URL <i class="bi bi-arrow-down-up"></i>
+								<?php echo get_sort_icon($sort_field, $sort_order, 'referer'); ?>
+							</th>
+							<th scope="col" class="sortable" data-field="visit_count">
+								방문 횟수 <i class="bi bi-arrow-down-up"></i>
+								<?php echo get_sort_icon($sort_field, $sort_order, 'visit_count'); ?>
+							</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -214,7 +241,89 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search_by_date'])) {
 		</div>
     </div>
 
+<script>
+// 정렬 처리 함수
+document.addEventListener('DOMContentLoaded', function() {
+    const sortableHeaders = document.querySelectorAll('.sortable');
     
+    sortableHeaders.forEach(header => {
+        header.style.cursor = 'pointer';
+        header.addEventListener('click', function() {
+            const field = this.dataset.field;
+            const currentSort = '<?php echo $sort_field; ?>';
+            const currentOrder = '<?php echo $sort_order; ?>';
+            
+            let newOrder = 'ASC';
+            if (field === currentSort && currentOrder === 'ASC') {
+                newOrder = 'DESC';
+            }
+            
+            // 현재 URL 파라미터 가져오기
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            // 기존 검색 조건 유지
+            const startDate = document.getElementById('start_date').value;
+            const endDate = document.getElementById('end_date').value;
+            const ipAddress = document.getElementById('ip_address').value;
+            
+            if (startDate) urlParams.set('start_date', startDate);
+            if (endDate) urlParams.set('end_date', endDate);
+            if (ipAddress) urlParams.set('ip_address', ipAddress);
+            
+            // 정렬 파라미터 설정
+            urlParams.set('sort', field);
+            urlParams.set('order', newOrder);
+            
+            // 페이지 이동
+            window.location.href = window.location.pathname + '?' + urlParams.toString();
+        });
+    });
+});
+
+// 삭제 확인 함수
+function confirmDelete() {
+    if (confirm('정말로 삭제하시겠습니까?')) {
+        const form = document.getElementById('searchForm');
+        const deleteForm = document.createElement('form');
+        deleteForm.method = 'POST';
+        deleteForm.action = window.location.pathname;
+        
+        // 검색 폼의 모든 입력값을 복사
+        const inputs = form.querySelectorAll('input');
+        inputs.forEach(input => {
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.name = input.name;
+            hiddenInput.value = input.value;
+            deleteForm.appendChild(hiddenInput);
+        });
+        
+        // 삭제 액션 추가
+        const actionInput = document.createElement('input');
+        actionInput.type = 'hidden';
+        actionInput.name = 'delete_by_date';
+        actionInput.value = '1';
+        deleteForm.appendChild(actionInput);
+        
+        document.body.appendChild(deleteForm);
+        deleteForm.submit();
+    }
+}
+</script>
+
+<style>
+.sortable {
+    position: relative;
+    padding-right: 20px !important;
+}
+.sortable i {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+</style>
+
 <?php
 include_once CM_ADMIN_PATH.'/admin.tail.php';
 ?>

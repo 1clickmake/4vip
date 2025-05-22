@@ -11,6 +11,18 @@ $options = [
     'conditions' => []
 ];
 
+// 정렬 처리
+$sort_field = $_GET['sort'] ?? 'group_name';
+$sort_order = $_GET['order'] ?? 'ASC';
+
+// 정렬 가능한 필드 목록
+$sortable_fields = ['group_id', 'group_name'];
+
+// 정렬 필드가 유효한지 확인
+if (in_array($sort_field, $sortable_fields)) {
+    $options['order_by'] = $sort_field . ' ' . $sort_order;
+}
+
 // 검색 조건이 있는 경우에만 conditions에 추가
 if (!empty($_GET['group'])) {
     $options['conditions'][] = ['field' => 'group_id', 'operator' => 'LIKE', 'value' => $_GET['group']];
@@ -39,8 +51,14 @@ $page = $result['current_page'];
 					<thead class="table-dark text-center">
 						<tr>
 							<th scope="col">No</th>
-							<th scope="col">그룹 ID</th>
-							<th scope="col">그룹 이름</th>
+							<th scope="col" class="sortable" data-field="group_id">
+								그룹 ID <i class="bi bi-arrow-down-up"></i>
+								<?php echo get_sort_icon($sort_field, $sort_order, 'group_id'); ?>
+							</th>
+							<th scope="col" class="sortable" data-field="group_name">
+								그룹 이름 <i class="bi bi-arrow-down-up"></i>
+								<?php echo get_sort_icon($sort_field, $sort_order, 'group_name'); ?>
+							</th>
 							<th scope="col">관리</th>
 						</tr>
 					</thead>
@@ -140,8 +158,46 @@ $page = $result['current_page'];
             
             $('#deleteModal').modal('show');
         });
+
+        // 정렬 처리
+        const sortableHeaders = document.querySelectorAll('.sortable');
+        
+        sortableHeaders.forEach(header => {
+            header.style.cursor = 'pointer';
+            header.addEventListener('click', function() {
+                const field = this.dataset.field;
+                const currentSort = '<?php echo $sort_field; ?>';
+                const currentOrder = '<?php echo $sort_order; ?>';
+                
+                let newOrder = 'ASC';
+                if (field === currentSort && currentOrder === 'ASC') {
+                    newOrder = 'DESC';
+                }
+                
+                // 현재 URL 파라미터 가져오기
+                const urlParams = new URLSearchParams(window.location.search);
+                urlParams.set('sort', field);
+                urlParams.set('order', newOrder);
+                
+                // 페이지 이동
+                window.location.href = window.location.pathname + '?' + urlParams.toString();
+            });
+        });
     });
 </script>
+
+<style>
+.sortable {
+    position: relative;
+    padding-right: 20px !important;
+}
+.sortable i {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+</style>
    
 <?php
 include_once CM_ADMIN_PATH.'/admin.tail.php';

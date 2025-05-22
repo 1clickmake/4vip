@@ -74,19 +74,13 @@ if (!defined('_CMBOARD_')) exit; // 개별 페이지 접근 불가
         <div class="mb-4">
             <div class="clearfix mb-2">
                 <div class="float-start"><label class="form-label">📤 파일 첨부</label></div>
-                <div class="float-end">
-                    <button class="btn btn-outline-primary btn-sm" id="add-file" type="button">
-                        <i class="bi bi-plus-circle"></i> 파일 추가
-                    </button>
-                </div>
             </div>
-            <div id="file-container">
-                <div class="input-group mb-2 file-input-group">
-                    <input type="file" class="form-control" name="files[]">
-                    <button class="btn btn-outline-danger remove-file" type="button">
-                        <i class="bi bi-dash-circle"></i>
-                    </button>
-                </div>
+            <div class="mb-3">
+                <input type="file" class="form-control" id="fileInput" name="files[]" multiple>
+                <small class="text-muted">여러 파일을 선택하려면 Ctrl(Windows) 또는 Command(Mac) 키를 누른 상태에서 파일을 선택하세요.</small>
+            </div>
+            <div id="filePreview" class="row g-2">
+                <!-- 파일 미리보기가 여기에 표시됩니다 -->
             </div>
         </div>
         
@@ -101,8 +95,100 @@ if (!defined('_CMBOARD_')) exit; // 개별 페이지 접근 불가
 const recaptchaSiteKey = '<?php echo $recaptcha_site; ?>';
 document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('writeForm');
-	
-	<?php if($recaptcha_site && $recaptcha_secret){?>
+    const fileInput = document.getElementById('fileInput');
+    const filePreview = document.getElementById('filePreview');
+    
+    // 파일 미리보기 기능
+    fileInput.addEventListener('change', function(e) {
+        filePreview.innerHTML = ''; // 기존 미리보기 초기화
+        
+        Array.from(e.target.files).forEach((file, index) => {
+            const reader = new FileReader();
+            const col = document.createElement('div');
+            col.className = 'col-md-4 col-lg-3';
+            
+            reader.onload = function(e) {
+                let previewContent = '';
+                
+                if (file.type.startsWith('image/')) {
+                    // 이미지 파일인 경우
+                    previewContent = `
+                        <div class="card h-100">
+                            <div class="position-relative">
+                                <img src="${e.target.result}" class="card-img-top" style="height: 150px; object-fit: cover;">
+                                <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2 delete-file" data-index="${index}">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <h6 class="card-title text-truncate">${file.name}</h6>
+                                <p class="card-text small text-muted">${(file.size / 1024).toFixed(2)} KB</p>
+                            </div>
+                        </div>`;
+                } else {
+                    // 이미지가 아닌 파일인 경우
+                    const fileIcon = getFileIcon(file.type);
+                    previewContent = `
+                        <div class="card h-100">
+                            <div class="position-relative">
+                                <div class="card-body text-center">
+                                    <i class="bi ${fileIcon} display-4"></i>
+                                    <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2 delete-file" data-index="${index}">
+                                        <i class="bi bi-x-lg"></i>
+                                    </button>
+                                </div>
+                                <div class="card-body pt-0">
+                                    <h6 class="card-title text-truncate">${file.name}</h6>
+                                    <p class="card-text small text-muted">${(file.size / 1024).toFixed(2)} KB</p>
+                                </div>
+                            </div>
+                        </div>`;
+                }
+                
+                col.innerHTML = previewContent;
+                filePreview.appendChild(col);
+            };
+            
+            reader.readAsDataURL(file);
+        });
+    });
+    
+    // 파일 타입에 따른 아이콘 반환 함수
+    function getFileIcon(fileType) {
+        if (fileType.includes('pdf')) return 'bi-file-pdf';
+        if (fileType.includes('word') || fileType.includes('document')) return 'bi-file-word';
+        if (fileType.includes('excel') || fileType.includes('sheet')) return 'bi-file-excel';
+        if (fileType.includes('powerpoint') || fileType.includes('presentation')) return 'bi-file-ppt';
+        if (fileType.includes('zip') || fileType.includes('compressed')) return 'bi-file-zip';
+        return 'bi-file-earmark';
+    }
+    
+    // 파일 삭제 이벤트 처리
+    filePreview.addEventListener('click', function(e) {
+        if (e.target.closest('.delete-file')) {
+            const deleteButton = e.target.closest('.delete-file');
+            const index = parseInt(deleteButton.dataset.index);
+            
+            // DataTransfer 객체를 사용하여 파일 목록 업데이트
+            const dt = new DataTransfer();
+            const files = fileInput.files;
+            
+            for (let i = 0; i < files.length; i++) {
+                if (i !== index) {
+                    dt.items.add(files[i]);
+                }
+            }
+            
+            // 파일 input 업데이트
+            fileInput.files = dt.files;
+            
+            // 미리보기 업데이트를 위해 change 이벤트 발생
+            const event = new Event('change');
+            fileInput.dispatchEvent(event);
+        }
+    });
+    
+    <?php if($recaptcha_site && $recaptcha_secret){?>
     form.addEventListener('submit', function (e) {
         e.preventDefault(); // 폼 제출 막기
         grecaptcha.ready(function() {
@@ -112,31 +198,7 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
     });
-	<?php } ?>
-
-    const container = document.getElementById('file-container');
-    const addButton = document.getElementById('add-file');
-
-    addButton.addEventListener('click', function () {
-        const group = document.createElement('div');
-        group.className = 'input-group mb-2 file-input-group';
-        group.innerHTML = `
-            <input type="file" class="form-control" name="files[]">
-            <button class="btn btn-outline-danger remove-file" type="button">
-                <i class="bi bi-dash-circle"></i>
-            </button>`;
-        container.appendChild(group);
-    });
-
-    container.addEventListener('click', function (e) {
-        if (e.target.closest('.remove-file')) {
-            const allGroups = container.querySelectorAll('.file-input-group');
-            if (allGroups.length > 1) {
-                const group = e.target.closest('.file-input-group');
-                group.remove();
-            }
-        }
-    });
+    <?php } ?>
 });
 </script>
 

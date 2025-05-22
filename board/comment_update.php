@@ -67,12 +67,20 @@ switch ($action) {
             'ip' => $_SERVER['REMOTE_ADDR']
         ];
 
-        if (process_data_insert('cm_board_comment', $data)) {
-            $response['status'] = 'success';
+        $comment_id = process_data_insert('cm_board_comment', $data);
+		
+		// 결과 확인
+		if ($comment_id !== false) {
+			// 성공
+			$response['status'] = 'success';
             $response['message'] = '댓글이 등록되었습니다.';
-        } else {
+		} else {
+			// 실패 (함수 내부에서 오류 로그는 남겼을 겁니다)
+			error_log("댓글 등록 실패: process_data_insert가 false를 반환했습니다.");
             $response['message'] = '댓글 등록에 실패했습니다.';
-        }
+		}
+		
+        
         break;
 
     case 'edit':
@@ -154,10 +162,6 @@ switch ($action) {
 
         // 코멘트 삭제
         $where = ['comment_id' => $comment_id];
-
-        /*에디터 이미지 삭제*/
-		$editorDir = CM_DATA_PATH.'/board/'.$board_id.'/editor';
-		process_editor_image_delete('cm_board_comment', 'content', ['board_id' => $board_id, 'board_num' => $board_num, 'comment_id' => $comment_id], $editorDir);
 
         if (process_data_delete('cm_board_comment', $where)) {
             $response['status'] = 'success';

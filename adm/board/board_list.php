@@ -11,6 +11,18 @@ $options = [
     'conditions' => []
 ];
 
+// 정렬 처리
+$sort_field = $_GET['sort'] ?? 'created_at';
+$sort_order = $_GET['order'] ?? 'DESC';
+
+// 정렬 가능한 필드 목록
+$sortable_fields = ['board_id', 'board_name', 'board_skin'];
+
+// 정렬 필드가 유효한지 확인
+if (in_array($sort_field, $sortable_fields)) {
+    $options['order_by'] = $sort_field . ' ' . $sort_order;
+}
+
 // 검색 조건이 있는 경우에만 conditions에 추가
 if (!empty($_GET['board_id'])) {
     $options['conditions'][] = ['field' => 'board_id', 'operator' => 'LIKE', 'value' => $_GET['board_id']];
@@ -39,9 +51,18 @@ $page = $result['current_page'];
                 <thead class="table-dark text-center">
                     <tr>
                         <th scope="col">No</th>
-                        <th scope="col">게시판 ID</th>
-                        <th scope="col">게시판 이름</th>
-                        <th scope="col">스킨</th>
+                        <th scope="col" class="sortable" data-field="board_id">
+                            게시판 ID <i class="bi bi-arrow-down-up"></i>
+                            <?php echo get_sort_icon($sort_field, $sort_order, 'board_id'); ?>
+                        </th>
+                        <th scope="col" class="sortable" data-field="board_name">
+                            게시판 이름 <i class="bi bi-arrow-down-up"></i>
+                            <?php echo get_sort_icon($sort_field, $sort_order, 'board_name'); ?>
+                        </th>
+                        <th scope="col" class="sortable" data-field="board_skin">
+                            스킨 <i class="bi bi-arrow-down-up"></i>
+                            <?php echo get_sort_icon($sort_field, $sort_order, 'board_skin'); ?>
+                        </th>
                         <th scope="col">관리</th>
                     </tr>
                 </thead>
@@ -201,7 +222,47 @@ function deleteBoard(boardId, boardName) {
         .catch(error => alert('삭제 중 오류가 발생했습니다.'));
     }
 }
+
+// 정렬 처리
+document.addEventListener('DOMContentLoaded', function() {
+    const sortableHeaders = document.querySelectorAll('.sortable');
+    
+    sortableHeaders.forEach(header => {
+        header.style.cursor = 'pointer';
+        header.addEventListener('click', function() {
+            const field = this.dataset.field;
+            const currentSort = '<?php echo $sort_field; ?>';
+            const currentOrder = '<?php echo $sort_order; ?>';
+            
+            let newOrder = 'ASC';
+            if (field === currentSort && currentOrder === 'ASC') {
+                newOrder = 'DESC';
+            }
+            
+            // 현재 URL 파라미터 가져오기
+            const urlParams = new URLSearchParams(window.location.search);
+            urlParams.set('sort', field);
+            urlParams.set('order', newOrder);
+            
+            // 페이지 이동
+            window.location.href = window.location.pathname + '?' + urlParams.toString();
+        });
+    });
+});
 </script>
+
+<style>
+.sortable {
+    position: relative;
+    padding-right: 20px !important;
+}
+.sortable i {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+</style>
 
 <?php
 include_once CM_ADMIN_PATH.'/admin.tail.php';

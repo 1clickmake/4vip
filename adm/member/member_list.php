@@ -11,12 +11,36 @@ $options = [
     'conditions' => []
 ];
 
-// 검색 조건이 있는 경우에만 conditions에 추가
-if (!empty($_GET['user_id'])) {
-    $options['conditions'][] = ['field' => 'user_id', 'operator' => 'LIKE', 'value' => $_GET['user_id']];
+
+
+// 정렬 처리
+$sort_field = $_GET['sort'] ?? 'user_no';
+$sort_order = $_GET['order'] ?? 'DESC';
+
+// 정렬 가능한 필드 목록 가져오기
+$sortable_fields = get_sortable_fields('cm_users');
+
+// 정렬 필드가 유효한지 확인
+if (in_array($sort_field, $sortable_fields)) {
+    $options['order_by'] = $sort_field . ' ' . $sort_order;
 }
-if (!empty($_GET['user_name'])) {
-    $options['conditions'][] = ['field' => 'user_name', 'operator' => 'LIKE', 'value' => $_GET['user_name']];
+
+// 검색 조건이 있는 경우에만 conditions에 추가
+if (!empty($_GET['search_type']) && !empty($_GET['search_keyword'])) {
+    $search_type = $_GET['search_type'];
+    $search_keyword = $_GET['search_keyword'];
+    
+    switch($search_type) {
+        case 'user_id':
+            $options['conditions'][] = ['field' => 'user_id', 'operator' => 'LIKE', 'value' => "%{$search_keyword}%"];
+            break;
+        case 'user_name':
+            $options['conditions'][] = ['field' => 'user_name', 'operator' => 'LIKE', 'value' => "%{$search_keyword}%"];
+            break;
+        case 'user_hp':
+            $options['conditions'][] = ['field' => 'user_hp', 'operator' => 'LIKE', 'value' => "%{$search_keyword}%"];
+            break;
+    }
 }
 
 $result = sql_list($options);
@@ -28,18 +52,65 @@ $page = $result['current_page'];
     <div class="main-content shifted" id="mainContent">
         <div class="container-fluid">
 			<h2 class="admin-list-title"><?php echo $cm_title;?></h2>
+			
+			<!-- 검색 폼 -->
+			<div class="card mb-4">
+				<div class="card-body">
+					<form method="get" class="row g-3" id="searchForm" onsubmit="return validateSearch()">
+						<div class="col-md-3">
+							<label for="search_type" class="form-label">검색 구분 <span class="text-danger">*</span></label>
+							<select class="form-select" id="search_type" name="search_type" required>
+								<option value="">선택하세요</option>
+								<option value="user_id" <?php echo (isset($_GET['search_type']) && $_GET['search_type'] === 'user_id') ? 'selected' : ''; ?>>아이디</option>
+								<option value="user_name" <?php echo (isset($_GET['search_type']) && $_GET['search_type'] === 'user_name') ? 'selected' : ''; ?>>이름</option>
+								<option value="user_hp" <?php echo (isset($_GET['search_type']) && $_GET['search_type'] === 'user_hp') ? 'selected' : ''; ?>>휴대폰</option>
+							</select>
+						</div>
+						<div class="col-md-6">
+							<label for="search_keyword" class="form-label">검색어 <span class="text-danger">*</span></label>
+							<input type="text" class="form-control" id="search_keyword" name="search_keyword" value="<?php echo isset($_GET['search_keyword']) ? htmlspecialchars($_GET['search_keyword']) : ''; ?>" required>
+						</div>
+						<div class="col-md-3 d-flex align-items-end">
+							<button type="submit" class="btn btn-primary me-2">검색</button>
+							<a href="member_list.php" class="btn btn-secondary">초기화</a>
+						</div>
+					</form>
+				</div>
+			</div>
+
 			<div class="table-responsive">
 				<table class="table table-sm table-striped table-bordered align-middle" style="min-width:1200px;">
-					<thead class="table-dark  text-center">
+					<thead class="table-dark text-center">
 						<tr>
 							<th scope="col">No</th>
-							<th scope="col">아이디</th>
-							<th scope="col">이름</th>
-							<th scope="col">이메일</th>
-							<th scope="col">휴대폰 번호</th>
-							<th scope="col">레벨</th>
-							<th scope="col">포인트</th>
-							<th scope="col">가입일</th>
+							<th scope="col" class="sortable" data-field="user_id">
+								아이디 <i class="bi bi-arrow-down-up"></i>
+								<?php echo get_sort_icon($sort_field, $sort_order, 'user_id'); ?>
+							</th>
+							<th scope="col" class="sortable" data-field="user_name">
+								이름 <i class="bi bi-arrow-down-up"></i>
+								<?php echo get_sort_icon($sort_field, $sort_order, 'user_name'); ?>
+							</th>
+							<th scope="col" class="sortable" data-field="user_email">
+								이메일 <i class="bi bi-arrow-down-up"></i>
+								<?php echo get_sort_icon($sort_field, $sort_order, 'user_email'); ?>
+							</th>
+							<th scope="col" class="sortable" data-field="user_hp">
+								휴대폰 번호 <i class="bi bi-arrow-down-up"></i>
+								<?php echo get_sort_icon($sort_field, $sort_order, 'user_hp'); ?>
+							</th>
+							<th scope="col" class="sortable" data-field="user_lv">
+								레벨 <i class="bi bi-arrow-down-up"></i>
+								<?php echo get_sort_icon($sort_field, $sort_order, 'user_lv'); ?>
+							</th>
+							<th scope="col" class="sortable" data-field="user_point">
+								포인트 <i class="bi bi-arrow-down-up"></i>
+								<?php echo get_sort_icon($sort_field, $sort_order, 'user_point'); ?>
+							</th>
+							<th scope="col" class="sortable" data-field="created_at">
+								가입일 <i class="bi bi-arrow-down-up"></i>
+								<?php echo get_sort_icon($sort_field, $sort_order, 'created_at'); ?>
+							</th>
 							<th scope="col">관리</th>
 						</tr>
 					</thead>
@@ -83,3 +154,65 @@ $page = $result['current_page'];
 <?php
 include_once CM_ADMIN_PATH.'/admin.tail.php';
 ?>
+
+<script>
+// 검색 유효성 검사 함수
+function validateSearch() {
+    const searchType = document.getElementById('search_type').value;
+    const searchKeyword = document.getElementById('search_keyword').value.trim();
+    
+    if (!searchType) {
+        alert('검색 구분을 선택해주세요.');
+        document.getElementById('search_type').focus();
+        return false;
+    }
+    
+    if (!searchKeyword) {
+        alert('검색어를 입력해주세요.');
+        document.getElementById('search_keyword').focus();
+        return false;
+    }
+    
+    return true;
+}
+
+// 정렬 처리 함수
+document.addEventListener('DOMContentLoaded', function() {
+    const sortableHeaders = document.querySelectorAll('.sortable');
+    
+    sortableHeaders.forEach(header => {
+        header.style.cursor = 'pointer';
+        header.addEventListener('click', function() {
+            const field = this.dataset.field;
+            const currentSort = '<?php echo $sort_field; ?>';
+            const currentOrder = '<?php echo $sort_order; ?>';
+            
+            let newOrder = 'ASC';
+            if (field === currentSort && currentOrder === 'ASC') {
+                newOrder = 'DESC';
+            }
+            
+            // 현재 URL 파라미터 가져오기
+            const urlParams = new URLSearchParams(window.location.search);
+            urlParams.set('sort', field);
+            urlParams.set('order', newOrder);
+            
+            // 페이지 이동
+            window.location.href = window.location.pathname + '?' + urlParams.toString();
+        });
+    });
+});
+</script>
+
+<style>
+.sortable {
+    position: relative;
+    padding-right: 20px !important;
+}
+.sortable i {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+</style>

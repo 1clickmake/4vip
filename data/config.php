@@ -1,9 +1,9 @@
 <?php
 // 데이터베이스 연결 정보
 $host = 'localhost';
-$dbname = '';		//your_database_name
-$username = '';	//your_username
-$password = '';		//your_password
+$dbname = 'sql_4vip_work';		//your_database_name
+$username = 'sql_4vip_work';	//your_username
+$password = '01055403957w';		//your_password
 
 // PDO를 사용한 데이터베이스 연결
 try {

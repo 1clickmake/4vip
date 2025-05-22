@@ -1,6 +1,39 @@
 <?php
 if (!defined('_CMBOARD_')) exit; // 개별 페이지 직접 접근 방지
 
+/**
+ * 모바일 기기 접속 여부를 확인합니다.
+ * 
+ * @return bool 모바일 기기 접속 시 true, PC 접속 시 false 반환
+ */
+function is_mobile(): bool {
+    $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+    
+    // 모바일 기기 패턴
+    $mobile_patterns = [
+        'iPhone', 'iPod', 'iPad', 'Android', 'webOS', 'BlackBerry',
+        'IEMobile', 'Opera Mini', 'Mobile', 'Mobile Safari',
+        'Windows Phone', 'Symbian', 'Nokia', 'SonyEricsson',
+        'LG', 'Samsung', 'HTC', 'Motorola', 'Nexus'
+    ];
+    
+    // 모바일 기기 패턴 확인
+    foreach ($mobile_patterns as $pattern) {
+        if (stripos($user_agent, $pattern) !== false) {
+            return true;
+        }
+    }
+    
+    // 모바일 브라우저 헤더 확인
+    if (isset($_SERVER['HTTP_X_WAP_PROFILE']) || 
+        isset($_SERVER['HTTP_PROFILE']) || 
+        (isset($_SERVER['HTTP_ACCEPT']) && 
+         strpos($_SERVER['HTTP_ACCEPT'], 'text/vnd.wap.wml') !== false)) {
+        return true;
+    }
+    
+    return false;
+}
 
 // 변수 또는 배열의 이름과 값을 얻어냄. print_r() 함수의 변형
 function print_r2($var)
@@ -268,14 +301,64 @@ function process_data_insert(string $tableName, array $data): string|false {
 }
 
 /**
- * 파일 메타데이터를 삽입합니다. (process_data_insert() 래퍼 함수)
+ * 파일 메타데이터를 삽입합니다.
  *
  * @param string $tableName 삽입할 테이블 이름
  * @param array  $data      삽입할 데이터 (연관 배열)
  * @return string|false 삽입된 레코드의 ID, 실패 시 false 반환
  */
 function process_file_insert(string $tableName, array $data): string|false {
-    return process_data_insert($tableName, $data);
+    global $pdo;
+
+    if (empty($data)) {
+        error_log("process_file_insert: 삽입할 데이터가 비어 있습니다.");
+        return false;
+    }
+
+    try {
+        // 데이터베이스 연결 확인
+        if (!$pdo) {
+            error_log("process_file_insert: 데이터베이스 연결이 설정되지 않았습니다.");
+            return false;
+        }
+
+        // SQL 쿼리 생성
+        $columns = array_keys($data);
+        $placeholders = implode(', ', array_map(fn($col) => ":" . $col, $columns));
+        $columnSql = implode(', ', array_map(fn($col) => "`" . str_replace("`", "``", $col) . "`", $columns));
+
+        $sql = "INSERT INTO `" . str_replace("`", "``", $tableName) . "` ({$columnSql}) VALUES ({$placeholders})";
+        
+        error_log("SQL Query: " . $sql);
+        error_log("Parameters: " . print_r($data, true));
+
+        // 쿼리 실행
+        $stmt = $pdo->prepare($sql);
+        $result = $stmt->execute($data);
+        
+        if ($result === false) {
+            $error = $stmt->errorInfo();
+            error_log("process_file_insert 실패: " . print_r($error, true));
+            return false;
+        }
+
+        // 삽입된 ID 확인
+        $file_id = $pdo->lastInsertId();
+        if ($file_id === false) {
+            error_log("process_file_insert: lastInsertId 실패");
+            return false;
+        }
+
+        error_log("파일 정보 저장 성공 - ID: " . $file_id);
+        return $file_id;
+    } catch (PDOException $e) {
+        error_log("process_file_insert PDO 오류: " . $e->getMessage());
+        error_log("PDO 오류 코드: " . $e->getCode());
+        return false;
+    } catch (Exception $e) {
+        error_log("process_file_insert 일반 오류: " . $e->getMessage());
+        return false;
+    }
 }
 
 /**
@@ -576,10 +659,18 @@ function sql_list(array $options = []): array {
             $params[":cond{$idx}_end"] = $value[1];
             $where_clauses[] = "$field BETWEEN :cond{$idx}_start AND :cond{$idx}_end";
 
-        } else {
-            if ($operator === 'LIKE') {
+        } elseif ($operator === 'LIKE') {
+            // IP 주소 검색인 경우 (ip_address 필드)
+            if ($field === 'ip_address') {
+                $where_clauses[] = "$field $operator $param_key";
+                $params[$param_key] = $value;
+            } else {
+                // 일반 LIKE 검색의 경우 기존처럼 양쪽에 % 추가
                 $value = '%' . $value . '%';
+                $where_clauses[] = "$field $operator $param_key";
+                $params[$param_key] = $value;
             }
+        } else {
             $where_clauses[] = "$field $operator $param_key";
             $params[$param_key] = $value;
         }
@@ -856,4 +947,37 @@ function render_pagination(int $current_page, int $total_pages, array $query_par
     </nav>
     <?php
     return ob_get_clean();
+}
+
+/**
+ * 정렬 아이콘을 생성합니다.
+ *
+ * @param string $current_field 현재 정렬 필드
+ * @param string $current_order 현재 정렬 방향
+ * @param string $field 비교할 필드
+ * @return string 정렬 아이콘 HTML
+ */
+function get_sort_icon(string $current_field, string $current_order, string $field): string {
+    if ($current_field !== $field) {
+        return '<i class="fas fa-sort"></i>';
+    }
+    return $current_order === 'ASC' ? 
+        '<i class="fas fa-sort-up"></i>' : 
+        '<i class="fas fa-sort-down"></i>';
+}
+
+/**
+ * 정렬 가능한 필드 목록을 반환합니다.
+ *
+ * @param string $table 테이블 이름
+ * @return array 정렬 가능한 필드 목록
+ */
+function get_sortable_fields(string $table): array {
+    $fields = [
+        'cm_users' => ['user_no', 'user_id', 'user_name', 'user_email', 'user_hp', 'user_lv', 'user_point', 'created_at'],
+        'cm_point' => ['id', 'user_id', 'point', 'description', 'created_at'],
+        'cm_board' => ['board_num', 'board_id', 'name', 'title', 'reg_date']
+    ];
+    
+    return $fields[$table] ?? [];
 }

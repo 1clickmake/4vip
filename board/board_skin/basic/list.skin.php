@@ -11,7 +11,7 @@ $has_search = !empty($_GET['search_keyword']);
         <div class="card mb-4">
             <div class="card-body">
                 <form method="get" class="row g-3">
-                    <input type="hidden" name="board_id" value="<?php echo $boardId;?>">
+                    <input type="hidden" name="board" value="<?php echo $boardId;?>">
                     <div class="col-md-3">
                         <select name="search_field" class="form-select">
                             <option value="title" <?php echo ($_GET['search_field'] ?? '') === 'title' ? 'selected' : '';?>>제목</option>
@@ -26,7 +26,7 @@ $has_search = !empty($_GET['search_keyword']);
                     <div class="col-md-2 d-flex gap-2">
                         <button type="submit" class="btn btn-primary flex-grow-1">검색</button>
                         <?php if ($has_search): ?>
-                        <a href="?board_id=<?php echo $boardId;?>" class="btn btn-secondary">전체</a>
+                        <a href="?board=<?php echo $boardId;?>" class="btn btn-secondary">전체</a>
                         <?php endif; ?>
                     </div>
                 </form>
