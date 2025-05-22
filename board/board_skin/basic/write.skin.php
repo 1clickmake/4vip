@@ -1,5 +1,8 @@
 <?php
 if (!defined('_CMBOARD_')) exit; // 개별 페이지 접근 불가
+
+// Font Awesome 추가
+echo '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">';
 ?>
 
 <div class="container mt-5">
@@ -49,14 +52,24 @@ if (!defined('_CMBOARD_')) exit; // 개별 페이지 접근 불가
         <div class="mb-4">
             <label class="form-label">📎 기존 첨부파일</label>
             <div class="row">
-                <?php foreach ($files as $file): ?>
+                <?php foreach ($files as $file): 
+                    $is_image = is_image_file($file['original_filename']);
+                    $icon_class = get_file_icon_class($file['original_filename']);
+                ?>
                 <div class="col-md-6 col-lg-4 mb-3">
                     <div class="card shadow-sm border">
                         <div class="card-body d-flex justify-content-between align-items-center">
-                            <div class="me-2">
-                                <i class="bi bi-file-earmark-text-fill me-1 text-primary"></i>
-                                <span class="text-muted"><?php echo htmlspecialchars($file['original_filename']); ?></span>
-                                <small class="d-block text-muted"><?php echo number_format($file['file_size'] / 1024, 2); ?> KB</small>
+                            <div class="d-flex align-items-center">
+                                <?php if ($is_image): ?>
+                                    <img src="download.php?board=<?php echo $boardId;?>&file_id=<?= $file['file_id'] ?>" 
+                                         class="me-2" style="width: 30px; height: 30px; object-fit: cover;">
+                                <?php else: ?>
+                                    <i class="fas <?= $icon_class ?> me-2" style="font-size: 1.2rem;"></i>
+                                <?php endif; ?>
+                                <div>
+                                    <span class="text-muted"><?php echo htmlspecialchars($file['original_filename']); ?></span>
+                                    <small class="d-block text-muted"><?php echo number_format($file['file_size'] / 1024, 2); ?> KB</small>
+                                </div>
                             </div>
                             <div class="form-check">
                                 <input type="checkbox" class="form-check-input" id="delete_<?php echo $file['file_id']; ?>" name="delete_files[]" value="<?php echo $file['file_id']; ?>">

@@ -1,6 +1,9 @@
 <?php
 if (!defined('_CMBOARD_')) exit; // 개별 페이지 접근 불가
 
+// Font Awesome 추가
+echo '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">';
+
 // 코멘트 목록 가져오기
 $comment_page = isset($_GET['comment_page']) ? (int)$_GET['comment_page'] : 1;
 $comment_limit = 10;
@@ -73,9 +76,20 @@ if ($comments === false) {
             <div class="file-area border-top pt-3">
                 <h6>첨부파일</h6>
                 <ul class="list-group">
-                    <?php foreach ($files as $file): ?>
+                    <?php foreach ($files as $file): 
+                        $is_image = is_image_file($file['original_filename']);
+                        $icon_class = get_file_icon_class($file['original_filename']);
+                    ?>
                     <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <span><?= htmlspecialchars($file['original_filename']) ?> (<?= number_format($file['file_size'] / 1024, 2) ?> KB)</span>
+                        <div class="d-flex align-items-center">
+                            <?php if ($is_image): ?>
+                                <img src="download.php?board=<?php echo $boardId;?>&file_id=<?= $file['file_id'] ?>" 
+                                     class="me-2" style="width: 30px; height: 30px; object-fit: cover;">
+                            <?php else: ?>
+                                <i class="fas <?= $icon_class ?> me-2" style="font-size: 1.2rem;"></i>
+                            <?php endif; ?>
+                            <span><?= htmlspecialchars($file['original_filename']) ?> (<?= number_format($file['file_size'] / 1024, 2) ?> KB)</span>
+                        </div>
                         <a href="download.php?board=<?php echo $boardId;?>&file_id=<?= $file['file_id'] ?>" class="btn btn-sm btn-primary">다운로드</a>
                     </li>
                     <?php endforeach; ?>

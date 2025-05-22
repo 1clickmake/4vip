@@ -981,3 +981,46 @@ function get_sortable_fields(string $table): array {
     
     return $fields[$table] ?? [];
 }
+
+/**
+ * 파일 확장자에 따른 Font Awesome 아이콘 클래스를 반환합니다.
+ *
+ * @param string $filename 파일명 또는 확장자
+ * @return string Font Awesome 아이콘 클래스
+ */
+function get_file_icon_class(string $filename): string {
+    $file_ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+    
+    // 파일 타입별 아이콘 클래스 설정
+    switch($file_ext) {
+        case 'pdf':
+            return 'fa-file-pdf';
+        case 'doc':
+        case 'docx':
+            return 'fa-file-word';
+        case 'xls':
+        case 'xlsx':
+            return 'fa-file-excel';
+        case 'ppt':
+        case 'pptx':
+            return 'fa-file-powerpoint';
+        case 'zip':
+        case 'rar':
+            return 'fa-file-archive';
+        case 'txt':
+            return 'fa-file-alt';
+        default:
+            return 'fa-file';
+    }
+}
+
+/**
+ * 파일이 이미지인지 확인합니다.
+ *
+ * @param string $filename 파일명 또는 확장자
+ * @return bool 이미지 파일 여부
+ */
+function is_image_file(string $filename): bool {
+    $file_ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+    return in_array($file_ext, ['jpg', 'jpeg', 'png', 'gif', 'webp']);
+}
