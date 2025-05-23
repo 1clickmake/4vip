@@ -16,14 +16,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	];
 	$data_update = process_data_update('cm_config', $DataToUpdate, $where); // $pdo 인자 없이 호출
 	
-	// 삽입 결과 확인
+	// 업데이트 결과 확인
     if ($data_update !== false) {
-        // 삽입 성공
+        // 업데이트 성공
 		alert('업데이트 되었습니다.', './design_form.php');
-        exit;
     } else {
-        // 삽입 실패 
-        echo "<script>alert('오류가 발생했습니다.'); history.back();</script>";
-        exit;
+        // 업데이트 실패 
+        alert('오류가 발생했습니다.');
     }
 }

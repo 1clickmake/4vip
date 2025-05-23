@@ -22,8 +22,7 @@ try {
     // 삭제 처리
     if ($mode === 'delete') {
         if (!isset($_POST['po_id']) || empty($_POST['po_id'])) {
-            echo '<script>alert("삭제할 팝업을 선택해주세요."); location.href="popup_list.php";</script>';
-            exit;
+			alert("삭제할 팝업을 선택해주세요.");
         }
         
         $po_id = intval($_POST['po_id']);
@@ -47,8 +46,7 @@ try {
     // 등록 또는 수정 처리
     // 필수 입력 데이터 검증
     if (!isset($_POST['po_title']) || empty($_POST['po_title'])) {
-        echo '<script>alert("팝업 제목을 입력해주세요."); history.back();</script>';
-        exit;
+        alert('팝업 제목을 입력해주세요.');
     }
     
     $po_title = trim($_POST['po_title']);
@@ -65,83 +63,65 @@ try {
     
     // 시작일이 종료일보다 늦을 경우 체크
     if (strtotime($po_start_date) > strtotime($po_end_date)) {
-        echo '<script>alert("종료일은 시작일보다 이후여야 합니다."); history.back();</script>';
-        exit;
+		alert('종료일은 시작일보다 이후여야 합니다');
     }
-    
+	
+	// 배열의 키는 데이터베이스 테이블의 컬럼 이름과 같아야 합니다.
+	$popData = [
+		'po_title' => $po_title,
+		'po_content' => $po_content,
+		'po_top' => $po_top,
+		'po_left' => $po_left,
+		'po_width' => $po_width,
+		'po_height' => $po_height,
+		'po_start_date' => $po_start_date,
+		'po_end_date' => $po_end_date,
+		'po_cookie_time' => $po_cookie_time,
+		'po_url' => $po_url,
+		'po_target' => $po_target,
+		'po_use' => $po_use
+	];
+
     if ($mode === 'insert') {
         // 신규 등록
-        $sql = "INSERT INTO cm_popup 
-                (po_title, po_content, po_top, po_left, po_width, po_height, 
-                po_start_date, po_end_date, po_cookie_time, po_url, po_target, po_use) 
-                VALUES 
-                (:po_title, :po_content, :po_top, :po_left, :po_width, :po_height, 
-                :po_start_date, :po_end_date, :po_cookie_time, :po_url, :po_target, :po_use)";
-        
-        $stmt = $pdo->prepare($sql);
-        $stmt->bindParam(':po_title', $po_title);
-        $stmt->bindParam(':po_content', $po_content);
-        $stmt->bindParam(':po_top', $po_top, PDO::PARAM_INT);
-        $stmt->bindParam(':po_left', $po_left, PDO::PARAM_INT);
-        $stmt->bindParam(':po_width', $po_width, PDO::PARAM_INT);
-        $stmt->bindParam(':po_height', $po_height, PDO::PARAM_INT);
-        $stmt->bindParam(':po_start_date', $po_start_date);
-        $stmt->bindParam(':po_end_date', $po_end_date);
-        $stmt->bindParam(':po_cookie_time', $po_cookie_time, PDO::PARAM_INT);
-        $stmt->bindParam(':po_url', $po_url);
-        $stmt->bindParam(':po_target', $po_target);
-        $stmt->bindParam(':po_use', $po_use, PDO::PARAM_INT);
-        
-        $stmt->execute();
-        
-        echo '<script>alert("팝업이 등록되었습니다."); location.href="popup_list.php";</script>';
+
+		//  process_data_insert 함수를 호출하여 데이터 삽입 시도
+		$insertResult = process_data_insert('cm_popup', $popData);
+		
+		// 결과 확인
+		if ($insertResult !== false) {
+			// 성공
+			alert('팝업이 등록되었습니다.', './popup_form.php?po_id='.$insertResult);
+		} else {
+			// 실패 (함수 내부에서 오류 로그는 남겼을 겁니다)
+			alert('팝업 등록중 오류가 발생했습니다.');
+		}
 		
     } else if ($mode === 'update') {
         // 수정
         if (!isset($_POST['po_id']) || empty($_POST['po_id'])) {
-            echo '<script>alert("수정할 팝업을 선택해주세요."); location.href="popup_list.php";</script>';
-            exit;
+            alert('수정할 팝업을 선택해주세요.');
         }
         
         $po_id = intval($_POST['po_id']);
-        
-        $sql = "UPDATE cm_popup SET 
-                po_title = :po_title, 
-                po_content = :po_content,
-                po_top = :po_top,
-                po_left = :po_left,
-                po_width = :po_width,
-                po_height = :po_height,
-                po_start_date = :po_start_date,
-                po_end_date = :po_end_date,
-                po_cookie_time = :po_cookie_time,
-                po_url = :po_url,
-                po_target = :po_target,
-                po_use = :po_use
-                WHERE po_id = :po_id";
-        
-        $stmt = $pdo->prepare($sql);
-        $stmt->bindParam(':po_title', $po_title);
-        $stmt->bindParam(':po_content', $po_content);
-        $stmt->bindParam(':po_top', $po_top, PDO::PARAM_INT);
-        $stmt->bindParam(':po_left', $po_left, PDO::PARAM_INT);
-        $stmt->bindParam(':po_width', $po_width, PDO::PARAM_INT);
-        $stmt->bindParam(':po_height', $po_height, PDO::PARAM_INT);
-        $stmt->bindParam(':po_start_date', $po_start_date);
-        $stmt->bindParam(':po_end_date', $po_end_date);
-        $stmt->bindParam(':po_cookie_time', $po_cookie_time, PDO::PARAM_INT);
-        $stmt->bindParam(':po_url', $po_url);
-        $stmt->bindParam(':po_target', $po_target);
-        $stmt->bindParam(':po_use', $po_use, PDO::PARAM_INT);
-        $stmt->bindParam(':po_id', $po_id, PDO::PARAM_INT);
-        
-        $stmt->execute();
-        
-		alert('팝업이 수정되었습니다.', 'popup_form.php?po_id='.$po_id);
+
+		$whereConditions = [
+			'po_id' => $po_id
+		];
+
+		$updateResult = process_data_update('cm_popup', $popData, $whereConditions);
+
+		// 결과 확인
+		if ($updateResult !== false) {
+			// 성공
+			alert('팝업이 수정되었습니다.', 'popup_form.php?po_id='.$po_id);
+		} else {
+			// 실패 (함수 내부에서 오류 로그는 남겼을 겁니다)
+			alert('팝업 수정중 오류가 발생했습니다.');
+		}
     }
 
 } catch (PDOException $e) {
-    echo '<script>alert("오류가 발생했습니다: ' . $e->getMessage() . '"); history.back();</script>';
-    exit;
+    alert('팝업 수정중 오류가 발생했습니다.' . $e->getMessage());
 }
 ?>

@@ -103,6 +103,9 @@ if (!defined('_CMBOARD_')) exit; // 개별 페이지 접근 불가
                         <li class="nav-item">
                             <a class="nav-link" href="<?php echo CM_ADMIN_URL ?>/board/board_list.php"><i class="bi bi-dot"></i> 게시판관리</a>
                         </li>
+						<li class="nav-item">
+                            <a class="nav-link" href="<?php echo CM_ADMIN_URL ?>/board/content_list.php"><i class="bi bi-dot"></i> 내용관리</a>
+                        </li>
                     </ul>
                 </div>
             </li>

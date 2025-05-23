@@ -17,6 +17,25 @@ CREATE TABLE `cm_board` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
+DROP TABLE IF EXISTS `cm_board_comment`;
+CREATE TABLE `cm_board_comment` (
+  `comment_id` int(11) NOT NULL AUTO_INCREMENT,
+  `board_id` varchar(100) NOT NULL,
+  `board_num` int(11) NOT NULL,
+  `user_id` varchar(255) DEFAULT NULL,
+  `name` varchar(50) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `content` text NOT NULL,
+  `ip` varchar(255) NOT NULL,
+  `reg_date` datetime DEFAULT CURRENT_TIMESTAMP,
+  `update_date` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`comment_id`),
+  KEY `board_num` (`board_num`),
+  CONSTRAINT `cm_board_comment_ibfk_1` FOREIGN KEY (`board_num`) REFERENCES `cm_board` (`board_num`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
 DROP TABLE IF EXISTS `cm_board_file`;
 CREATE TABLE `cm_board_file` (
   `file_id` int(11) NOT NULL AUTO_INCREMENT,
@@ -77,6 +96,18 @@ CREATE TABLE `cm_config` (
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+DROP TABLE IF EXISTS `cm_content`;
+CREATE TABLE `cm_content` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `co_id` varchar(20) NOT NULL DEFAULT '',
+  `co_subject` varchar(255) NOT NULL DEFAULT '',
+  `co_content` longtext NOT NULL,
+  `co_editor` tinyint(4) NOT NULL COMMENT '에디터선택 0 기본',
+  `co_width` int(11) NOT NULL COMMENT 'width = 1 = full',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `cm_menu`;

@@ -180,7 +180,7 @@ function resetModal() {
 }
 
 function editBoard(boardId) {
-    fetch('./get_board_data.php?board_id=' + encodeURIComponent(boardId))
+    fetch('<?php echo CM_ADMIN_URL;?>/ajax/get_board_data.php?board_id=' + encodeURIComponent(boardId))
         .then(response => response.json())
         .then(data => {
             if (data.error) {
@@ -205,10 +205,10 @@ function editBoard(boardId) {
 
 function deleteBoard(boardId, boardName) {
     if (confirm(`게시판 "${boardName}"을(를) 정말 삭제하시겠습니까?`)) {
-        fetch('./board_delete.php', {
+        fetch('./board_form_update.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: 'board_id=' + encodeURIComponent(boardId)
+            body: 'action=delete&board_id=' + encodeURIComponent(boardId)
         })
         .then(response => response.json())
         .then(data => {

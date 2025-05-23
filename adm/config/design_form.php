@@ -8,7 +8,7 @@ include_once CM_ADMIN_PATH.'/admin.head.php';
     <div class="main-content shifted" id="mainContent">
         <div class="container-fluid">
             <!-- 페이지 제목 -->
-            <h2 class="page-title mb-5">
+            <h2 class="page-title mb-5 fs-4">
                 <i class="fas fa-palette me-3"></i><?php echo $cm_title; ?>
             </h2>
             
@@ -30,84 +30,8 @@ include_once CM_ADMIN_PATH.'/admin.head.php';
                     </div>
                 </div>
             </div>
-
-            <!-- 메인 설정 카드 -->
-            <div class="row justify-content-center">
-                <div class="col-lg-8 col-xl-6">
-                    <div class="card table-card">
-                        <div class="card-header text-center">
-                            <h5><i class="fas fa-cog me-2"></i>템플릿 설정</h5>
-                        </div>
-                        <div class="card-body p-4">
-                            <form action="./design_form_update.php" method="post" id="designForm">
-                                <!-- 커뮤니티 템플릿 선택 -->
-                                <div class="mb-4">
-                                    <label for="templateId" class="form-label fw-semibold">
-                                        <i class="fas fa-users me-2 text-primary"></i>커뮤니티 템플릿
-                                    </label>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-light border-end-0">
-                                            <i class="fas fa-desktop text-muted"></i>
-                                        </span>
-                                        <select class="form-select border-start-0" id="templateId" name="template_id" required>
-                                            <option value="">템플릿을 선택해주세요</option>
-                                            <?php
-                                            $folderDirectory = CM_PATH.'/template/community';
-                                            $folders = getSubdirectories($folderDirectory);
-                                            foreach ($folders as $folder) {
-                                            ?>
-                                            <option value="<?php echo $folder;?>" <?php echo ($folder == $config['template_id']) ? 'selected' : ''; ?>><?php echo $folder;?></option>
-                                            <?php } ?>
-                                        </select>
-                                    </div>
-                                    <div class="form-text">
-                                        <i class="fas fa-lightbulb text-warning me-1"></i>
-                                        커뮤니티 페이지의 디자인을 결정하는 템플릿입니다.
-                                    </div>
-                                </div>
-                                
-                                <!-- 쇼핑몰 템플릿 선택 -->
-                                <div class="mb-4">
-                                    <label for="shoptemplateId" class="form-label fw-semibold">
-                                        <i class="fas fa-shopping-cart me-2 text-success"></i>쇼핑몰 템플릿
-                                    </label>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-light border-end-0">
-                                            <i class="fas fa-store text-muted"></i>
-                                        </span>
-                                        <select class="form-select border-start-0" id="shoptemplateId" name="shop_template_id" required>
-                                            <option value="">템플릿을 선택해주세요</option>
-                                            <?php
-                                            $folderDirectory = CM_PATH.'/template/shop';
-                                            $folders = getSubdirectories($folderDirectory);
-                                            foreach ($folders as $folder) {
-                                            ?>
-                                            <option value="<?php echo $folder;?>" <?php echo ($folder == $config['shop_template_id']) ? 'selected' : ''; ?>><?php echo $folder;?></option>
-                                            <?php } ?>
-                                        </select>
-                                    </div>
-                                    <div class="form-text">
-                                        <i class="fas fa-lightbulb text-warning me-1"></i>
-                                        쇼핑몰 페이지의 디자인을 결정하는 템플릿입니다.
-                                    </div>
-                                </div>
-
-                                <!-- 버튼 그룹 -->
-                                <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-4">
-                                    <button type="button" class="btn btn-outline-secondary btn-lg me-md-2" onclick="resetForm()">
-                                        <i class="fas fa-undo me-2"></i>초기화
-                                    </button>
-                                    <button type="submit" class="btn btn-primary btn-lg">
-                                        <i class="fas fa-save me-2"></i>설정 저장
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 추가 정보 카드들 -->
+			
+			<!-- 추가 정보 카드들 -->
             <div class="row mt-5">
                 <div class="col-md-4 mb-3">
                     <div class="stats-card card-visits h-100">
@@ -143,6 +67,90 @@ include_once CM_ADMIN_PATH.'/admin.head.php';
                     </div>
                 </div>
             </div>
+
+            <!-- 메인 설정 카드 -->
+            <div class="row justify-content-center">
+                <div class="col">
+                    <div class="card table-card">
+                        <div class="card-header text-start">
+                            <h5><i class="fas fa-cog me-2"></i>템플릿 설정</h5>
+                        </div>
+                        <div class="card-body p-4">
+                            <form action="./design_form_update.php" method="post" id="designForm">
+								<div class="row">
+									<div class="col-md-6">
+										<!-- 커뮤니티 템플릿 선택 -->
+										<div class="mb-4">
+											<label for="templateId" class="form-label fw-semibold">
+												<i class="fas fa-users me-2 text-primary"></i>커뮤니티 템플릿
+											</label>
+											<div class="input-group">
+												<span class="input-group-text bg-light border-end-0">
+													<i class="fas fa-desktop text-muted"></i>
+												</span>
+												<select class="form-select border-start-0" id="templateId" name="template_id" required>
+													<option value="">템플릿을 선택해주세요</option>
+													<?php
+													$folderDirectory = CM_PATH.'/template/community';
+													$folders = getSubdirectories($folderDirectory);
+													foreach ($folders as $folder) {
+													?>
+													<option value="<?php echo $folder;?>" <?php echo ($folder == $config['template_id']) ? 'selected' : ''; ?>><?php echo $folder;?></option>
+													<?php } ?>
+												</select>
+											</div>
+											<div class="form-text">
+												<i class="fas fa-lightbulb text-warning me-1"></i>
+												커뮤니티 페이지의 디자인을 결정하는 템플릿입니다.
+											</div>
+										</div>
+									</div>
+                                
+									<div class="col-md-6">
+										<!-- 쇼핑몰 템플릿 선택 -->
+										<div class="mb-4">
+											<label for="shoptemplateId" class="form-label fw-semibold">
+												<i class="fas fa-shopping-cart me-2 text-success"></i>쇼핑몰 템플릿
+											</label>
+											<div class="input-group">
+												<span class="input-group-text bg-light border-end-0">
+													<i class="fas fa-store text-muted"></i>
+												</span>
+												<select class="form-select border-start-0" id="shoptemplateId" name="shop_template_id" required>
+													<option value="">템플릿을 선택해주세요</option>
+													<?php
+													$folderDirectory = CM_PATH.'/template/shop';
+													$folders = getSubdirectories($folderDirectory);
+													foreach ($folders as $folder) {
+													?>
+													<option value="<?php echo $folder;?>" <?php echo ($folder == $config['shop_template_id']) ? 'selected' : ''; ?>><?php echo $folder;?></option>
+													<?php } ?>
+												</select>
+											</div>
+											<div class="form-text">
+												<i class="fas fa-lightbulb text-warning me-1"></i>
+												쇼핑몰 페이지의 디자인을 결정하는 템플릿입니다.
+											</div>
+										</div>
+									</div>
+								</div><!--//row-->
+
+                                <!-- 버튼 그룹 -->
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-4">
+                                    <button type="button" class="btn btn-outline-secondary me-md-2" onclick="resetForm()">
+                                        <i class="fas fa-undo me-2"></i>초기화
+                                    </button>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-2"></i>설정 저장
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            
         </div>
     </div>
 

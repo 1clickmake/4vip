@@ -28,12 +28,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	
 	// 삽입 결과 확인
     if ($data_update !== false) {
-        // 삽입 성공
+        // 업데이트 성공
 		alert('업데이트 되었습니다.', './config_form.php');
-        exit;
     } else {
-        // 삽입 실패 
+        // 업데이트 실패 
         echo "<script>alert('오류가 발생했습니다.'); history.back();</script>";
-        exit;
     }
 }

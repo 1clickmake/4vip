@@ -374,7 +374,7 @@ function process_data_update(string $tableName, array $data, array $whereConditi
 
     if (empty($data) || empty($whereConditions)) {
         error_log("process_data_update: 업데이트할 데이터 또는 조건이 비어 있습니다.");
-        return false;
+        return true; // 데이터나 조건이 비어있으면 성공으로 처리
     }
 
     $setParts = array_map(fn($col) => "`" . str_replace("`", "``", $col) . "` = :" . $col, array_keys($data));
@@ -394,7 +394,7 @@ function process_data_update(string $tableName, array $data, array $whereConditi
     try {
         $stmt = $pdo->prepare($sql);
         $stmt->execute(array_merge($data, $whereData));
-        return $stmt->rowCount() > 0;
+        return true; // 업데이트 성공 여부와 관계없이 true 반환
     } catch (PDOException $e) {
         error_log("process_data_update 오류 ({$tableName}): " . $e->getMessage());
         return false;
@@ -425,7 +425,7 @@ function process_data_delete(string $tableName, array $whereConditions): bool {
 
     if (empty($whereConditions)) {
         error_log("process_data_delete: 삭제 조건이 비어 있습니다.");
-        return false;
+        return true; // 조건이 비어있으면 성공으로 처리
     }
 
     $whereParts = [];
@@ -442,7 +442,7 @@ function process_data_delete(string $tableName, array $whereConditions): bool {
     try {
         $stmt = $pdo->prepare($sql);
         $stmt->execute($whereData);
-        return $stmt->rowCount() > 0;
+        return true; // 삭제 성공 여부와 관계없이 true 반환
     } catch (PDOException $e) {
         error_log("process_data_delete 오류 ({$tableName}): " . $e->getMessage());
         return false;
@@ -491,7 +491,7 @@ function process_editor_image_upload(array $fileInfo, string $dataname)
     $file_ext = strtolower(pathinfo($original_filename, PATHINFO_EXTENSION));
 
     // 저장 경로 설정
-	if($dataname == "popup"){
+	if($dataname == "popup" || $dataname == "content"){
 		$upload_dir = CM_DATA_PATH . '/' . $dataname . '/';
 		$upload_url = CM_DATA_URL . '/' . $dataname ;
 	}else{

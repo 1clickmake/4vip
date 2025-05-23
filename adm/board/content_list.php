@@ -1,24 +1,22 @@
 <?php
 include_once './_common.php';
-$cm_title = "회원 관리";
-include_once CM_ADMIN_PATH.'/admin.head.php'; 
+$cm_title = "내용관리";
+include_once CM_ADMIN_PATH.'/admin.head.php';
 
 $options = [
-    'table' => 'cm_users',
+    'table' => 'cm_content',
     'page' => $_GET['page'] ?? 1,
     'per_page' => 20,
-    'order_by' => 'user_no DESC',
+    'order_by' => 'id DESC',
     'conditions' => []
 ];
 
-
-
 // 정렬 처리
-$sort_field = $_GET['sort'] ?? 'user_no';
+$sort_field = $_GET['sort'] ?? 'id';
 $sort_order = $_GET['order'] ?? 'DESC';
 
-// 정렬 가능한 필드 목록 가져오기
-$sortable_fields = get_sortable_fields('cm_users');
+// 정렬 가능한 필드 목록
+$sortable_fields = ['co_id', 'co_subject', 'co_editor', 'co_width'];
 
 // 정렬 필드가 유효한지 확인
 if (in_array($sort_field, $sortable_fields)) {
@@ -31,14 +29,11 @@ if (!empty($_GET['search_type']) && !empty($_GET['search_keyword'])) {
     $search_keyword = $_GET['search_keyword'];
     
     switch($search_type) {
-        case 'user_id':
-            $options['conditions'][] = ['field' => 'user_id', 'operator' => 'LIKE', 'value' => "%{$search_keyword}%"];
+        case 'co_id':
+            $options['conditions'][] = ['field' => 'co_id', 'operator' => 'LIKE', 'value' => "%{$search_keyword}%"];
             break;
-        case 'user_name':
-            $options['conditions'][] = ['field' => 'user_name', 'operator' => 'LIKE', 'value' => "%{$search_keyword}%"];
-            break;
-        case 'user_hp':
-            $options['conditions'][] = ['field' => 'user_hp', 'operator' => 'LIKE', 'value' => "%{$search_keyword}%"];
+        case 'co_subject':
+            $options['conditions'][] = ['field' => 'co_subject', 'operator' => 'LIKE', 'value' => "%{$search_keyword}%"];
             break;
     }
 }
@@ -51,8 +46,11 @@ $page = $result['current_page'];
     <!-- Main Content -->
     <div class="main-content shifted" id="mainContent">
         <div class="container-fluid">
-			<h2 class="admin-list-title"><?php echo $cm_title;?></h2>
-			
+			<div class="d-flex justify-content-between align-items-center mb-4">
+				<h2 class="admin-list-title"><?php echo $cm_title;?></h2>
+				<a href="content_form.php" class="btn btn-primary">내용추가</a>
+			</div>
+
 			<!-- 검색 폼 -->
 			<div class="card mb-4">
 				<div class="card-body">
@@ -61,9 +59,8 @@ $page = $result['current_page'];
 							<label for="search_type" class="form-label">검색 구분 <span class="text-danger">*</span></label>
 							<select class="form-select" id="search_type" name="search_type" required>
 								<option value="">선택하세요</option>
-								<option value="user_id" <?php echo (isset($_GET['search_type']) && $_GET['search_type'] === 'user_id') ? 'selected' : ''; ?>>아이디</option>
-								<option value="user_name" <?php echo (isset($_GET['search_type']) && $_GET['search_type'] === 'user_name') ? 'selected' : ''; ?>>이름</option>
-								<option value="user_hp" <?php echo (isset($_GET['search_type']) && $_GET['search_type'] === 'user_hp') ? 'selected' : ''; ?>>휴대폰</option>
+								<option value="co_id" <?php echo (isset($_GET['search_type']) && $_GET['search_type'] === 'co_id') ? 'selected' : ''; ?>>ID</option>
+								<option value="co_subject" <?php echo (isset($_GET['search_type']) && $_GET['search_type'] === 'co_subject') ? 'selected' : ''; ?>>제목</option>
 							</select>
 						</div>
 						<div class="col-md-6">
@@ -72,8 +69,7 @@ $page = $result['current_page'];
 						</div>
 						<div class="col-md-3 d-flex align-items-end">
 							<button type="submit" class="btn btn-primary me-2">검색</button>
-							<a href="member_list.php" class="btn btn-secondary me-2">초기화</a>
-							<a href="member_form.php" class="btn btn-danger">회원신규등록</a>
+							<a href="content_list.php" class="btn btn-secondary">초기화</a>
 						</div>
 					</form>
 				</div>
@@ -83,65 +79,60 @@ $page = $result['current_page'];
 				<table class="table table-sm table-striped table-bordered align-middle" style="min-width:1200px;">
 					<thead class="table-dark text-center">
 						<tr>
-							<th scope="col">No</th>
-							<th scope="col" class="sortable" data-field="user_id">
-								아이디 <i class="bi bi-arrow-down-up"></i>
-								<?php echo get_sort_icon($sort_field, $sort_order, 'user_id'); ?>
+							<th scope="col">
+								No
 							</th>
-							<th scope="col" class="sortable" data-field="user_name">
-								이름 <i class="bi bi-arrow-down-up"></i>
-								<?php echo get_sort_icon($sort_field, $sort_order, 'user_name'); ?>
+							<th scope="col" class="sortable" data-field="co_id">
+								ID <i class="bi bi-arrow-down-up"></i>
+								<?php echo get_sort_icon($sort_field, $sort_order, 'co_id'); ?>
 							</th>
-							<th scope="col" class="sortable" data-field="user_email">
-								이메일 <i class="bi bi-arrow-down-up"></i>
-								<?php echo get_sort_icon($sort_field, $sort_order, 'user_email'); ?>
+							<th scope="col" class="sortable" data-field="co_subject">
+								제목 <i class="bi bi-arrow-down-up"></i>
+								<?php echo get_sort_icon($sort_field, $sort_order, 'co_subject'); ?>
 							</th>
-							<th scope="col" class="sortable" data-field="user_hp">
-								휴대폰 번호 <i class="bi bi-arrow-down-up"></i>
-								<?php echo get_sort_icon($sort_field, $sort_order, 'user_hp'); ?>
+							<th scope="col" class="sortable" data-field="co_editor">
+								에디터 <i class="bi bi-arrow-down-up"></i>
+								<?php echo get_sort_icon($sort_field, $sort_order, 'co_editor'); ?>
 							</th>
-							<th scope="col" class="sortable" data-field="user_lv">
-								레벨 <i class="bi bi-arrow-down-up"></i>
-								<?php echo get_sort_icon($sort_field, $sort_order, 'user_lv'); ?>
-							</th>
-							<th scope="col" class="sortable" data-field="user_point">
-								포인트 <i class="bi bi-arrow-down-up"></i>
-								<?php echo get_sort_icon($sort_field, $sort_order, 'user_point'); ?>
-							</th>
-							<th scope="col" class="sortable" data-field="created_at">
-								가입일 <i class="bi bi-arrow-down-up"></i>
-								<?php echo get_sort_icon($sort_field, $sort_order, 'created_at'); ?>
+							<th scope="col" class="sortable" data-field="co_width">
+								레이아웃 <i class="bi bi-arrow-down-up"></i>
+								<?php echo get_sort_icon($sort_field, $sort_order, 'co_width'); ?>
 							</th>
 							<th scope="col">관리</th>
 						</tr>
 					</thead>
 					<tbody>
-						<?php if (empty($result)){ ?>
+						<?php if (empty($result['list'])){ ?>
 							<tr>
-								<td colspan="6" class="text-center">회원이이 없습니다.</td>
+								<td colspan="6" class="text-center">등록된 내용이 없습니다.</td>
 							</tr>
 						<?php } else { ?>
 							<?php 
 							$start_number = $result['total_rows'] - ($page - 1) * $options['per_page'];
 							foreach ($result['list'] as $index => $list) {
 								$list_no = $start_number - $index;
+								if($list['co_editor'] == 1){
+									$edt = "개발";
+								}else{
+									$edt = "기본";
+								}
+								$width = $list['co_width'] == 1 ? "전체" : "기본";
 							?>
-							<tr class=" text-center">
+							<tr class="text-center">
 								<td><?php echo $list_no;?></td>
-								<td><?php echo $list['user_id'];?></td>
-								<td><?php echo $list['user_name'];?></td>
-								<td><?php echo $list['user_email'];?></td>
-								<td><?php echo $list['user_hp'];?></td>
-								<td><?php echo $list['user_lv'];?></td>
-								<td><?php echo number_format($list['user_point']);?></td>
-								<td><?php echo get_formatDate($list['created_at'], 'Y-m-d h:i:s');?></td>
+								<td><a href="<?php echo CM_URL?>/content/content.php?co_id=<?php echo urlencode($list['co_id']); ?>"><?php echo htmlspecialchars($list['co_id']);?></a></td>
+								<td><?php echo htmlspecialchars($list['co_subject']);?></td>
+								<td><?php echo $edt; ?></td>
+								<td><?php echo $width; ?></td>
 								<td>
-									<a href="member_form.php?user_no=<?php echo $list['user_no'];?>" class="btn btn-sm btn-primary me-2">수정</a>
+									<a href="content_form.php?id=<?php echo $list['id'];?>" class="btn btn-sm btn-primary">수정</a>
+									<button type="button" class="btn btn-sm btn-danger" onclick="deleteContent(<?php echo $list['id'];?>, '<?php echo htmlspecialchars($list['co_id']);?>')">삭제</button>
+									<a href="<?php echo CM_URL?>/content/content.php?co_id=<?php echo urlencode($list['co_id']); ?>" class="btn btn-sm btn-secondary">확인</a>
 								</td>
 							</tr>
 							<?php } ?>
 						<?php } ?>
-						</tbody>
+					</tbody>
 				</table>
 			</div>
 			
@@ -151,10 +142,18 @@ $page = $result['current_page'];
 		</div>
     </div>
 
-    
-<?php
-include_once CM_ADMIN_PATH.'/admin.tail.php';
-?>
+<style>
+.sortable {
+    position: relative;
+    padding-right: 20px !important;
+}
+.sortable i {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+</style>
 
 <script>
 // 검색 유효성 검사 함수
@@ -203,17 +202,31 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+function deleteContent(id, co_id) {
+    if (confirm(`정말로 "${co_id}" 내용을 삭제하시겠습니까?`)) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = 'content_form_update.php';
+        
+        const wInput = document.createElement('input');
+        wInput.type = 'hidden';
+        wInput.name = 'w';
+        wInput.value = 'delete';
+        
+        const idInput = document.createElement('input');
+        idInput.type = 'hidden';
+        idInput.name = 'id';
+        idInput.value = id;
+        
+        form.appendChild(wInput);
+        form.appendChild(idInput);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
 </script>
 
-<style>
-.sortable {
-    position: relative;
-    padding-right: 20px !important;
-}
-.sortable i {
-    position: absolute;
-    right: 5px;
-    top: 50%;
-    transform: translateY(-50%);
-}
-</style>
+<?php
+include_once CM_ADMIN_PATH.'/admin.tail.php';
+?>

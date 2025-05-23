@@ -5,13 +5,13 @@ include_once CM_ADMIN_PATH.'/admin.head.php';
 ?>
 
 <style>
-.menu-scroll{min-height:600px; max-height:600px; overflow-y:auto;}
+.menu-scroll{min-height:1000px; max-height:1000px; overflow-y:auto;}
 .nested-menu { margin-left: 0; }
-.sortable {padding-left: 1.5rem;}
+.sortable {padding-left: 1.0rem;}
 .sortable .btn {font-size:12px !important; padding:4px 8px;}
 .menu-item { 
     border-bottom: 1px solid #e9ecef; 
-    padding: 12px 15px; 
+    padding: 10px 10px; 
     font-size:14px; 
     cursor: move; 
     transition: all 0.3s ease;
@@ -178,7 +178,7 @@ include_once CM_ADMIN_PATH.'/admin.head.php';
                                         foreach ($menus as $menu) {
                                             $class = $level > 2 ? 'nested-menu-deep' : 'nested-menu';
                                             $levelClass = 'level-' . min($menu['menu_level'], 3);
-                                            echo '<li class="menu-item ' . $class . '" data-id="' . $menu['menu_id'] . '" style="margin-left: ' . ($level * 20) . 'px">';
+                                            echo '<li class="menu-item ' . $class . '" data-id="' . $menu['menu_id'] . '" style="margin-left: ' . ($level * 0) . 'px">';
                                             echo '<div class="d-flex justify-content-between align-items-center">';
                                             echo '<div class="d-flex align-items-center">';
                                             echo '<i class="fas fa-grip-vertical text-muted me-2"></i>';
