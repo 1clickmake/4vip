@@ -1,11 +1,21 @@
 <?php
 include_once './_common.php';
+// CSRF 토큰 검증 (예시 - 실제로는 세션에 저장된 토큰과 비교해야 함)
+// if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+// echo '<script>alert("잘못된 접근입니다. (CSRF 토큰 오류)"); location.href="popup_list.php";</script>';
+// exit;
+// }
 
 // POST 데이터 확인
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo '<script>alert("잘못된 접근입니다."); location.href="popup_list.php";</script>';
     exit;
 }
+
+// HTML Purifier 라이브러리 로드 (예시 - 실제 경로에 맞게 수정)
+// require_once '/path/to/htmlpurifier/library/HTMLPurifier.auto.php';
+// $config = HTMLPurifier_Config::createDefault();
+// $purifier = new HTMLPurifier($config);
 
 // 모드 확인 (insert, update, delete)
 $mode = isset($_POST['mode']) ? $_POST['mode'] : '';
@@ -50,7 +60,14 @@ try {
     }
     
     $po_title = trim($_POST['po_title']);
-    $po_content = isset($_POST['po_content']) ? trim($_POST['po_content']) : '';
+    // $po_content = isset($_POST['po_content']) ? trim($_POST['po_content']) : '';
+    // po_content는 HTML이므로, XSS 방지를 위해 HTML Purifier 사용 (예시)
+    $po_content_raw = isset($_POST['po_content']) ? $_POST['po_content'] : '';
+    // $po_content = $purifier->purify($po_content_raw); // HTML Purifier 사용 시
+    $po_content = $po_content_raw; // HTML Purifier 미사용 시 임시 (보안 취약)
+    // 만약 HTML을 허용하지 않으려면 strip_tags 또는 htmlspecialchars 사용
+    // $po_content = strip_tags($po_content_raw);
+
     $po_top = isset($_POST['po_top']) ? intval($_POST['po_top']) : 0;
     $po_left = isset($_POST['po_left']) ? intval($_POST['po_left']) : 0;
     $po_width = isset($_POST['po_width']) ? intval($_POST['po_width']) : 400;
@@ -60,6 +77,11 @@ try {
     $po_cookie_time = isset($_POST['po_cookie_time']) ? intval($_POST['po_cookie_time']) : 24;
     $po_url = isset($_POST['po_url']) ? trim($_POST['po_url']) : '';
     $po_target = (isset($_POST['po_target']) && $_POST['po_target'] === '_self') ? '_self' : '_blank';
+
+    // 추가 유효성 검사 (예시)
+    if (!empty($po_url) && !filter_var($po_url, FILTER_VALIDATE_URL)) {
+        alert('유효하지 않은 URL 형식입니다.');
+    }
     
     // 시작일이 종료일보다 늦을 경우 체크
     if (strtotime($po_start_date) > strtotime($po_end_date)) {

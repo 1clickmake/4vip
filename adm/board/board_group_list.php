@@ -35,7 +35,8 @@ $result = sql_list($options);
 $total_pages = $result['total_pages'];
 $page = $result['current_page'];
 ?>
-
+<input type="hidden" id="sort_field" value="<?php echo $sort_field;?>">
+<input type="hidden" id="sort_order" value="<?php echo $sort_order;?>">
     <!-- Main Content -->
     <div class="main-content shifted" id="mainContent">
         <div class="container-fluid">
@@ -52,11 +53,11 @@ $page = $result['current_page'];
 						<tr>
 							<th scope="col">No</th>
 							<th scope="col" class="sortable" data-field="group_id">
-								그룹 ID <i class="bi bi-arrow-down-up"></i>
+								그룹 ID
 								<?php echo get_sort_icon($sort_field, $sort_order, 'group_id'); ?>
 							</th>
 							<th scope="col" class="sortable" data-field="group_name">
-								그룹 이름 <i class="bi bi-arrow-down-up"></i>
+								그룹 이름
 								<?php echo get_sort_icon($sort_field, $sort_order, 'group_name'); ?>
 							</th>
 							<th scope="col">게시판 수</th>
@@ -151,85 +152,6 @@ $page = $result['current_page'];
 		</div>
     </div>
 
-<script>
-function resetModal() {
-    document.getElementById('groupForm').reset();
-    document.getElementById('formMode').value = 'insert';
-    document.getElementById('groupId').removeAttribute('readonly');
-    document.getElementById('createBoardModalLabel').innerText = '새 그룹 만들기';
-    document.getElementById('submitButton').innerText = '그룹 생성';
-}
-
-function editGroup(groupId, groupName) {
-    document.getElementById('formMode').value = 'update';
-    document.getElementById('groupId').value = groupId;
-    document.getElementById('groupId').setAttribute('readonly', 'readonly');
-    document.getElementById('groupName').value = groupName;
-    document.getElementById('createBoardModalLabel').innerText = '그룹 수정';
-    document.getElementById('submitButton').innerText = '수정 저장';
-    new bootstrap.Modal(document.getElementById('createBoardModal')).show();
-}
-
-function deleteGroup(groupId, groupName) {
-    if (confirm(`"${groupName}" 그룹을 정말 삭제하시겠습니까?`)) {
-        fetch('./board_group_form_update.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: 'action=delete&group_id=' + encodeURIComponent(groupId)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('그룹이 삭제되었습니다.');
-                window.location.reload();
-            } else {
-                alert(data.error || '삭제 중 오류가 발생했습니다.');
-            }
-        })
-        .catch(error => alert('삭제 중 오류가 발생했습니다.'));
-    }
-}
-
-// 정렬 처리
-document.addEventListener('DOMContentLoaded', function() {
-    const sortableHeaders = document.querySelectorAll('.sortable');
-    
-    sortableHeaders.forEach(header => {
-        header.style.cursor = 'pointer';
-        header.addEventListener('click', function() {
-            const field = this.dataset.field;
-            const currentSort = '<?php echo $sort_field; ?>';
-            const currentOrder = '<?php echo $sort_order; ?>';
-            
-            let newOrder = 'ASC';
-            if (field === currentSort && currentOrder === 'ASC') {
-                newOrder = 'DESC';
-            }
-            
-            // 현재 URL 파라미터 가져오기
-            const urlParams = new URLSearchParams(window.location.search);
-            urlParams.set('sort', field);
-            urlParams.set('order', newOrder);
-            
-            // 페이지 이동
-            window.location.href = window.location.pathname + '?' + urlParams.toString();
-        });
-    });
-});
-</script>
-
-<style>
-.sortable {
-    position: relative;
-    padding-right: 20px !important;
-}
-.sortable i {
-    position: absolute;
-    right: 5px;
-    top: 50%;
-    transform: translateY(-50%);
-}
-</style>
    
 <?php
 include_once CM_ADMIN_PATH.'/admin.tail.php';

@@ -177,13 +177,20 @@ function display_popups() {
             
             // URL 저장
             if (!empty($po_url)) {
-                echo '<script>var popup_url_' . $po_id . ' = "' . $po_url . '"; var popup_target_' . $po_id . ' = "' . $po_target . '";</script>';
+                // JavaScript 변수 생성 시 json_encode를 사용하여 안전하게 처리
+                echo '<script>';
+                echo 'if (typeof popupsData === "undefined") { var popupsData = {}; }';
+                echo 'popupsData[' . $po_id . '] = { url: ' . json_encode($po_url) . ', target: ' . json_encode($po_target) . ' };';
+                echo '</script>';
             }
         }
         
         // 공통 자바스크립트
         echo '<script>
         $(document).ready(function() {
+            if (typeof popupsData === "undefined") { // popupsData가 정의되지 않았을 경우를 대비
+                window.popupsData = {};
+            }
             $(".popup-layer").show();
             
             // 드래그 가능하도록 설정
@@ -215,11 +222,10 @@ function display_popups() {
         
         // URL 열기
         function openPopupUrl(id) {
-            var url = eval("popup_url_" + id);
-            var target = eval("popup_target_" + id);
+            var popupData = popupsData[id];
             
-            if (url) {
-                window.open(url, target);
+            if (popupData && popupData.url) {
+                window.open(popupData.url, popupData.target);
             }
         }
         

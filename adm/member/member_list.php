@@ -11,8 +11,6 @@ $options = [
     'conditions' => []
 ];
 
-
-
 // 정렬 처리
 $sort_field = $_GET['sort'] ?? 'user_no';
 $sort_order = $_GET['order'] ?? 'DESC';
@@ -47,11 +45,16 @@ $result = sql_list($options);
 $total_pages = $result['total_pages'];
 $page = $result['current_page'];
 ?>
+<input type="hidden" id="sort_field" value="<?php echo $sort_field;?>">
+<input type="hidden" id="sort_order" value="<?php echo $sort_order;?>">
 
     <!-- Main Content -->
     <div class="main-content shifted" id="mainContent">
         <div class="container-fluid">
-			<h2 class="admin-list-title"><?php echo $cm_title;?></h2>
+			<div class="d-flex justify-content-between align-items-center mb-4">
+				<h2 class="admin-list-title"><?php echo $cm_title;?></h2>
+				<a href="member_form.php" class="btn btn-primary">회원신규등록</a>
+			</div>
 			
 			<!-- 검색 폼 -->
 			<div class="card mb-4">
@@ -72,8 +75,7 @@ $page = $result['current_page'];
 						</div>
 						<div class="col-md-3 d-flex align-items-end">
 							<button type="submit" class="btn btn-primary me-2">검색</button>
-							<a href="member_list.php" class="btn btn-secondary me-2">초기화</a>
-							<a href="member_form.php" class="btn btn-danger">회원신규등록</a>
+							<a href="member_list.php" class="btn btn-secondary">초기화</a>
 						</div>
 					</form>
 				</div>
@@ -85,40 +87,40 @@ $page = $result['current_page'];
 						<tr>
 							<th scope="col">No</th>
 							<th scope="col" class="sortable" data-field="user_id">
-								아이디 <i class="bi bi-arrow-down-up"></i>
+								아이디
 								<?php echo get_sort_icon($sort_field, $sort_order, 'user_id'); ?>
 							</th>
 							<th scope="col" class="sortable" data-field="user_name">
-								이름 <i class="bi bi-arrow-down-up"></i>
+								이름
 								<?php echo get_sort_icon($sort_field, $sort_order, 'user_name'); ?>
 							</th>
 							<th scope="col" class="sortable" data-field="user_email">
-								이메일 <i class="bi bi-arrow-down-up"></i>
+								이메일
 								<?php echo get_sort_icon($sort_field, $sort_order, 'user_email'); ?>
 							</th>
 							<th scope="col" class="sortable" data-field="user_hp">
-								휴대폰 번호 <i class="bi bi-arrow-down-up"></i>
+								휴대폰 번호
 								<?php echo get_sort_icon($sort_field, $sort_order, 'user_hp'); ?>
 							</th>
 							<th scope="col" class="sortable" data-field="user_lv">
-								레벨 <i class="bi bi-arrow-down-up"></i>
+								레벨
 								<?php echo get_sort_icon($sort_field, $sort_order, 'user_lv'); ?>
 							</th>
 							<th scope="col" class="sortable" data-field="user_point">
-								포인트 <i class="bi bi-arrow-down-up"></i>
+								포인트
 								<?php echo get_sort_icon($sort_field, $sort_order, 'user_point'); ?>
 							</th>
 							<th scope="col" class="sortable" data-field="created_at">
-								가입일 <i class="bi bi-arrow-down-up"></i>
+								가입일
 								<?php echo get_sort_icon($sort_field, $sort_order, 'created_at'); ?>
 							</th>
 							<th scope="col">관리</th>
 						</tr>
 					</thead>
 					<tbody>
-						<?php if (empty($result)){ ?>
+						<?php if (empty($result['list'])){ ?>
 							<tr>
-								<td colspan="6" class="text-center">회원이이 없습니다.</td>
+								<td colspan="9" class="text-center">등록된 회원이 없습니다.</td>
 							</tr>
 						<?php } else { ?>
 							<?php 
@@ -126,12 +128,12 @@ $page = $result['current_page'];
 							foreach ($result['list'] as $index => $list) {
 								$list_no = $start_number - $index;
 							?>
-							<tr class=" text-center">
+							<tr class="text-center">
 								<td><?php echo $list_no;?></td>
-								<td><?php echo $list['user_id'];?></td>
-								<td><?php echo $list['user_name'];?></td>
-								<td><?php echo $list['user_email'];?></td>
-								<td><?php echo $list['user_hp'];?></td>
+								<td><?php echo htmlspecialchars($list['user_id'] ?? '');?></td>
+								<td><?php echo htmlspecialchars($list['user_name'] ?? '');?></td>
+								<td><?php echo htmlspecialchars($list['user_email'] ?? '');?></td>
+								<td><?php echo htmlspecialchars($list['user_hp'] ?? '');?></td>
 								<td><?php echo $list['user_lv'];?></td>
 								<td><?php echo number_format($list['user_point']);?></td>
 								<td><?php echo get_formatDate($list['created_at'], 'Y-m-d h:i:s');?></td>
@@ -141,7 +143,7 @@ $page = $result['current_page'];
 							</tr>
 							<?php } ?>
 						<?php } ?>
-						</tbody>
+					</tbody>
 				</table>
 			</div>
 			
@@ -151,69 +153,13 @@ $page = $result['current_page'];
 		</div>
     </div>
 
-    
+<script>
+    function validateSearch() {
+        // 검색 유효성 검사 로직이 필요하면 여기에 추가
+        return true;
+    }
+</script>
+   
 <?php
 include_once CM_ADMIN_PATH.'/admin.tail.php';
 ?>
-
-<script>
-// 검색 유효성 검사 함수
-function validateSearch() {
-    const searchType = document.getElementById('search_type').value;
-    const searchKeyword = document.getElementById('search_keyword').value.trim();
-    
-    if (!searchType) {
-        alert('검색 구분을 선택해주세요.');
-        document.getElementById('search_type').focus();
-        return false;
-    }
-    
-    if (!searchKeyword) {
-        alert('검색어를 입력해주세요.');
-        document.getElementById('search_keyword').focus();
-        return false;
-    }
-    
-    return true;
-}
-
-// 정렬 처리 함수
-document.addEventListener('DOMContentLoaded', function() {
-    const sortableHeaders = document.querySelectorAll('.sortable');
-    
-    sortableHeaders.forEach(header => {
-        header.style.cursor = 'pointer';
-        header.addEventListener('click', function() {
-            const field = this.dataset.field;
-            const currentSort = '<?php echo $sort_field; ?>';
-            const currentOrder = '<?php echo $sort_order; ?>';
-            
-            let newOrder = 'ASC';
-            if (field === currentSort && currentOrder === 'ASC') {
-                newOrder = 'DESC';
-            }
-            
-            // 현재 URL 파라미터 가져오기
-            const urlParams = new URLSearchParams(window.location.search);
-            urlParams.set('sort', field);
-            urlParams.set('order', newOrder);
-            
-            // 페이지 이동
-            window.location.href = window.location.pathname + '?' + urlParams.toString();
-        });
-    });
-});
-</script>
-
-<style>
-.sortable {
-    position: relative;
-    padding-right: 20px !important;
-}
-.sortable i {
-    position: absolute;
-    right: 5px;
-    top: 50%;
-    transform: translateY(-50%);
-}
-</style>

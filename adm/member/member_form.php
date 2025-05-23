@@ -25,140 +25,230 @@ if (isset($_GET['user_no']) && is_numeric($_GET['user_no'])) {
         exit;
     }
 }
+
+$cm_title = $is_new ? '회원 신규 등록' : '회원 정보 수정';
 ?>
 
 <!-- Main Content -->
 <div class="main-content shifted" id="mainContent">
     <div class="container-fluid">
-        <div class="form-container">
-            <div class="form-card">
-                <div class="form-header">
-                    <h2><i class="fas fa-user-edit me-2"></i><?php echo $is_new ? '회원 신규 등록' : '회원 정보 수정'; ?></h2>
-                    <?php if (!$is_new): ?>
-                    <div class="member-id">회원 ID: <?php echo htmlspecialchars($user['user_id']); ?></div>
-                    <?php endif; ?>
-                </div>
-                
-                <div class="form-body">
-                    <form action="member_form_update.php" method="POST" id="memberForm">
-                        <?php if (!$is_new): ?>
-                        <input type="hidden" name="user_no" value="<?php echo htmlspecialchars($user['user_no']); ?>">
-                        <?php endif; ?>
-                        
-                        <div class="form-group-wrapper">
-                            <label for="user_id" class="form-label">
-                                <i class="fas fa-id-card me-1"></i>회원 아이디
-                            </label>
-                            <div class="input-group-custom">
-                                <input type="text" class="form-control" id="user_id" name="user_id" 
-                                       value="<?php echo $is_new ? '' : htmlspecialchars($user['user_id']); ?>" 
-                                       <?php echo $is_new ? 'required' : 'readonly'; ?>>
-                                <i class="fas fa-lock input-icon"></i>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group-wrapper">
-                            <label for="user_name" class="form-label">
-                                <i class="fas fa-user me-1"></i>이름
-                            </label>
-                            <div class="input-group-custom">
-                                <input type="text" class="form-control" id="user_name" name="user_name" 
-                                       value="<?php echo $is_new ? '' : htmlspecialchars($user['user_name']); ?>" required>
-                                <i class="fas fa-pencil-alt input-icon"></i>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group-wrapper">
-                            <label for="user_password" class="form-label">
-                                <i class="fas fa-key me-1"></i>비밀번호
-                            </label>
-                            <div class="input-group-custom">
-                                <input type="password" class="form-control" id="user_password" name="user_password" 
-                                       <?php echo $is_new ? 'required' : ''; ?>
-                                       placeholder="<?php echo $is_new ? '비밀번호를 입력하세요' : '변경하지 않으려면 공란으로 두세요'; ?>">
-                                <i class="fas fa-eye-slash input-icon"></i>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group-wrapper">
-                            <label for="user_email" class="form-label">
-                                <i class="fas fa-envelope me-1"></i>이메일
-                            </label>
-                            <div class="input-group-custom">
-                                <input type="email" class="form-control" id="user_email" name="user_email" 
-                                       value="<?php echo $is_new ? '' : htmlspecialchars($user['user_email'] ?? ''); ?>">
-                                <i class="fas fa-at input-icon"></i>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group-wrapper">
-                            <label for="user_hp" class="form-label">
-                                <i class="fas fa-mobile-alt me-1"></i>휴대폰 번호
-                            </label>
-                            <div class="input-group-custom">
-                                <input type="text" class="form-control" id="user_hp" name="user_hp" 
-                                       value="<?php echo $is_new ? '' : htmlspecialchars($user['user_hp'] ?? ''); ?>">
-                                <i class="fas fa-phone input-icon"></i>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group-wrapper">
-                            <label for="user_lv" class="form-label">
-                                <i class="fas fa-star me-1"></i>회원 레벨
-                            </label>
-                            <div class="input-group-custom">
-                                <input type="number" class="form-control" id="user_lv" name="user_lv" 
-                                       value="<?php echo $is_new ? '1' : htmlspecialchars($user['user_lv']); ?>" required min="1">
-                                <i class="fas fa-level-up-alt input-icon"></i>
-                            </div>
-                        </div>
-                        
-                        <?php if (!$is_new): ?>
-                        <div class="form-group-wrapper">
-                            <label class="form-label">
-                                <i class="fas fa-coins me-1"></i>보유포인트
-                            </label>
-                            <div class="point-display">
-                                <i class="fas fa-gem me-2"></i><?php echo number_format($user['user_point']); ?> P
-                            </div>
-                        </div>
-                        
-                        <div class="form-group-wrapper">
-                            <div class="form-check">
-                                <input type="checkbox" class="form-check-input" id="user_block" name="user_block" value="1" 
-                                       <?php echo $user['user_block'] == 1 ? 'checked' : ''; ?>>
-                                <label class="form-check-label" for="user_block">
-                                    <i class="fas fa-ban me-2"></i>회원 차단
-                                </label>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group-wrapper">
-                            <div class="form-check">
-                                <input type="checkbox" class="form-check-input" id="user_leave" name="user_leave" value="1" 
-                                       <?php echo $user['user_leave'] == 1 ? 'checked' : ''; ?>>
-                                <label class="form-check-label" for="user_leave">
-                                    <i class="fas fa-user-times me-2"></i>회원 탈퇴
-                                </label>
-                            </div>
-                        </div>
-                        <?php endif; ?>
-                        
-                        <div class="btn-group-custom">
-                            <button type="submit" name="action" value="<?php echo $is_new ? 'insert' : 'update'; ?>" class="btn btn-custom btn-primary-custom">
-                                <i class="fas fa-save me-2"></i><?php echo $is_new ? '회원 등록' : '정보 수정'; ?>
-                            </button>
+        <h1 class="page-title mb-5 fs-4">
+            <i class="fas fa-user-edit me-3"></i>
+            <?php echo $cm_title; ?>
+        </h1>
+        
+        <div class="row justify-content-center">
+            <div class="col">
+                <div class="card chart-card shadow-lg">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-user me-2"></i>
+                            <?php echo $is_new ? '신규 회원 정보' : '회원 정보 수정'; ?>
                             <?php if (!$is_new): ?>
-                            <button type="submit" name="action" value="delete" class="btn btn-custom btn-danger-custom" 
-                                    onclick="return confirm('정말로 이 회원을 삭제하시겠습니까?');">
-                                <i class="fas fa-trash me-2"></i>회원 삭제
-                            </button>
+                            <span class="badge bg-secondary ms-2">ID: <?php echo htmlspecialchars($user['user_id']); ?></span>
                             <?php endif; ?>
-                            <a href="member_list.php" class="btn btn-custom btn-secondary-custom">
-                                <i class="fas fa-list me-2"></i>목록으로
-                            </a>
-                        </div>
-                    </form>
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <form action="member_form_update.php" method="POST" id="memberForm">
+                            <?php if (!$is_new): ?>
+                            <input type="hidden" name="user_no" value="<?php echo htmlspecialchars($user['user_no']); ?>">
+                            <?php endif; ?>
+                            
+                            <!-- 기본 정보 섹션 -->
+                            <div class="mb-5">
+                                <h6 class="text-muted fw-bold mb-3">
+                                    <i class="fas fa-id-card me-2"></i>
+                                    기본 정보
+                                </h6>
+                                
+                                <div class="mb-4">
+                                    <label for="user_id" class="form-label fw-semibold">
+                                        <i class="fas fa-user me-2 text-primary"></i>
+                                        회원 아이디
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light">
+                                            <i class="fas fa-id-card"></i>
+                                        </span>
+                                        <input type="text" class="form-control" id="user_id" name="user_id" 
+                                               value="<?php echo $is_new ? '' : htmlspecialchars($user['user_id']); ?>" 
+                                               <?php echo $is_new ? 'required' : 'readonly'; ?>
+                                               placeholder="회원 아이디를 입력하세요">
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label for="user_name" class="form-label fw-semibold">
+                                        <i class="fas fa-signature me-2 text-success"></i>
+                                        이름
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light">
+                                            <i class="fas fa-user"></i>
+                                        </span>
+                                        <input type="text" class="form-control" id="user_name" name="user_name" 
+                                               value="<?php echo $is_new ? '' : htmlspecialchars($user['user_name']); ?>" 
+                                               required placeholder="이름을 입력하세요">
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label for="user_password" class="form-label fw-semibold">
+                                        <i class="fas fa-key me-2 text-warning"></i>
+                                        비밀번호
+                                    </label>
+                                    <div class="alert alert-info py-2 mb-2" role="alert">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        <small><?php echo $is_new ? '새 회원의 비밀번호를 입력하세요.' : '변경하지 않으려면 공란으로 두세요.'; ?></small>
+                                    </div>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light">
+                                            <i class="fas fa-lock"></i>
+                                        </span>
+                                        <input type="password" class="form-control" id="user_password" name="user_password" 
+                                               <?php echo $is_new ? 'required' : ''; ?>
+                                               placeholder="<?php echo $is_new ? '비밀번호를 입력하세요' : '변경하지 않으려면 공란으로 두세요'; ?>">
+                                        <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 연락처 정보 섹션 -->
+                            <div class="mb-5">
+                                <h6 class="text-muted fw-bold mb-3">
+                                    <i class="fas fa-address-book me-2"></i>
+                                    연락처 정보
+                                </h6>
+                                
+                                <div class="mb-4">
+                                    <label for="user_email" class="form-label fw-semibold">
+                                        <i class="fas fa-envelope me-2 text-info"></i>
+                                        이메일
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light">
+                                            <i class="fas fa-at"></i>
+                                        </span>
+                                        <input type="email" class="form-control" id="user_email" name="user_email" 
+                                               value="<?php echo $is_new ? '' : htmlspecialchars($user['user_email'] ?? ''); ?>"
+                                               placeholder="이메일 주소를 입력하세요">
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label for="user_hp" class="form-label fw-semibold">
+                                        <i class="fas fa-mobile-alt me-2 text-success"></i>
+                                        휴대폰 번호
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light">
+                                            <i class="fas fa-phone"></i>
+                                        </span>
+                                        <input type="text" class="form-control" id="user_hp" name="user_hp" 
+                                               value="<?php echo $is_new ? '' : htmlspecialchars($user['user_hp'] ?? ''); ?>"
+                                               placeholder="휴대폰 번호를 입력하세요 (예: 010-1234-5678)">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 권한 설정 섹션 -->
+                            <div class="mb-5">
+                                <h6 class="text-muted fw-bold mb-3">
+                                    <i class="fas fa-cog me-2"></i>
+                                    권한 설정
+                                </h6>
+                                
+                                <div class="mb-4">
+                                    <label for="user_lv" class="form-label fw-semibold">
+                                        <i class="fas fa-star me-2 text-warning"></i>
+                                        회원 레벨
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light">
+                                            <i class="fas fa-level-up-alt"></i>
+                                        </span>
+                                        <input type="number" class="form-control" id="user_lv" name="user_lv" 
+                                               value="<?php echo $is_new ? '1' : htmlspecialchars($user['user_lv']); ?>" 
+                                               required min="1" placeholder="회원 레벨을 입력하세요">
+                                    </div>
+                                </div>
+                                
+                                <?php if (!$is_new): ?>
+                                <div class="mb-4">
+                                    <label class="form-label fw-semibold">
+                                        <i class="fas fa-coins me-2 text-primary"></i>
+                                        보유 포인트
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light">
+                                            <i class="fas fa-gem"></i>
+                                        </span>
+                                        <input type="text" class="form-control" value="<?php echo number_format($user['user_point']); ?> P" readonly>
+                                    </div>
+                                </div>
+                                <?php endif; ?>
+                            </div>
+
+                            <?php if (!$is_new): ?>
+                            <!-- 계정 상태 섹션 -->
+                            <div class="mb-5">
+                                <h6 class="text-muted fw-bold mb-3">
+                                    <i class="fas fa-shield-alt me-2"></i>
+                                    계정 상태
+                                </h6>
+                                
+                                <div class="alert alert-warning py-2 mb-3" role="alert">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    <small>계정 상태 변경 시 주의하여 설정해주세요.</small>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="user_block" name="user_block" value="1" 
+                                               <?php echo $user['user_block'] == 1 ? 'checked' : ''; ?>>
+                                        <label class="form-check-label fw-semibold" for="user_block">
+                                            <i class="fas fa-ban me-2 text-danger"></i>
+                                            회원 차단
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="user_leave" name="user_leave" value="1" 
+                                               <?php echo $user['user_leave'] == 1 ? 'checked' : ''; ?>>
+                                        <label class="form-check-label fw-semibold" for="user_leave">
+                                            <i class="fas fa-user-times me-2 text-secondary"></i>
+                                            회원 탈퇴
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <?php endif; ?>
+
+                            <!-- 저장 버튼 -->
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button type="submit" name="action" value="<?php echo $is_new ? 'insert' : 'update'; ?>" class="btn btn-primary btn-lg px-5">
+                                    <i class="fas fa-save me-2"></i>
+                                    <?php echo $is_new ? '회원 등록' : '정보 수정'; ?>
+                                </button>
+                                <?php if (!$is_new): ?>
+                                <button type="submit" name="action" value="delete" class="btn btn-danger btn-lg px-4" 
+                                        onclick="return confirm('정말로 이 회원을 삭제하시겠습니까?');">
+                                    <i class="fas fa-trash me-2"></i>
+                                    회원 삭제
+                                </button>
+                                <?php endif; ?>
+                                <a href="member_list.php" class="btn btn-secondary btn-lg px-4">
+                                    <i class="fas fa-list me-2"></i>
+                                    목록으로
+                                </a>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -167,55 +257,87 @@ if (isset($_GET['user_no']) && is_numeric($_GET['user_no'])) {
 
 <script>
 // 비밀번호 보기/숨기기 토글
-document.addEventListener('DOMContentLoaded', function() {
-    const passwordInput = document.getElementById('user_password');
-    const eyeIcon = passwordInput.parentElement.querySelector('.input-icon');
+document.getElementById('togglePassword').addEventListener('click', function() {
+    const passwordField = document.getElementById('user_password');
+    const toggleIcon = this.querySelector('i');
     
-    eyeIcon.addEventListener('click', function() {
-        if (passwordInput.type === 'password') {
-            passwordInput.type = 'text';
-            eyeIcon.classList.remove('fa-eye-slash');
-            eyeIcon.classList.add('fa-eye');
+    if (passwordField.type === 'password') {
+        passwordField.type = 'text';
+        toggleIcon.classList.remove('fa-eye');
+        toggleIcon.classList.add('fa-eye-slash');
+    } else {
+        passwordField.type = 'password';
+        toggleIcon.classList.remove('fa-eye-slash');
+        toggleIcon.classList.add('fa-eye');
+    }
+});
+
+// 폼 유효성 검사 시각적 피드백
+document.getElementById('memberForm').addEventListener('submit', function(e) {
+    const requiredFields = this.querySelectorAll('[required]');
+    let isValid = true;
+    
+    requiredFields.forEach(field => {
+        if (!field.value.trim()) {
+            field.classList.add('is-invalid');
+            isValid = false;
         } else {
-            passwordInput.type = 'password';
-            eyeIcon.classList.remove('fa-eye');
-            eyeIcon.classList.add('fa-eye-slash');
+            field.classList.remove('is-invalid');
+            field.classList.add('is-valid');
         }
     });
     
-    // 폼 유효성 검사
-    document.getElementById('memberForm').addEventListener('submit', function(e) {
-        const userId = document.getElementById('user_id').value.trim();
-        const userName = document.getElementById('user_name').value.trim();
-        const userPassword = document.getElementById('user_password').value;
-        const userLevel = document.getElementById('user_lv').value;
-        
-        if (!userId) {
-            alert('아이디를 입력해주세요.');
-            e.preventDefault();
-            return false;
+    if (!isValid) {
+        e.preventDefault();
+        alert('필수 입력 항목을 모두 입력해주세요.');
+        return false;
+    }
+    
+    // 추가 유효성 검사
+    const userLevel = document.getElementById('user_lv').value;
+    if (userLevel < 1) {
+        alert('회원 레벨은 1 이상이어야 합니다.');
+        e.preventDefault();
+        return false;
+    }
+});
+
+// 실시간 유효성 검사
+document.querySelectorAll('input[required]').forEach(input => {
+    input.addEventListener('blur', function() {
+        if (this.value.trim()) {
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+        } else {
+            this.classList.remove('is-valid');
+            this.classList.add('is-invalid');
         }
-        
-        if (!userName) {
-            alert('이름을 입력해주세요.');
-            e.preventDefault();
-            return false;
-        }
-        
-        if (userLevel < 1) {
-            alert('회원 레벨은 1 이상이어야 합니다.');
-            e.preventDefault();
-            return false;
-        }
-        
-        <?php if ($is_new): ?>
-        if (!userPassword) {
-            alert('비밀번호를 입력해주세요.');
-            e.preventDefault();
-            return false;
-        }
-        <?php endif; ?>
     });
+});
+
+// 이메일 형식 검사
+document.getElementById('user_email').addEventListener('blur', function() {
+    if (this.value) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (emailRegex.test(this.value)) {
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+        } else {
+            this.classList.remove('is-valid');
+            this.classList.add('is-invalid');
+        }
+    }
+});
+
+// 휴대폰 번호 형식 자동 변환
+document.getElementById('user_hp').addEventListener('input', function() {
+    let value = this.value.replace(/[^0-9]/g, '');
+    if (value.length >= 3 && value.length <= 7) {
+        value = value.replace(/(\d{3})(\d{1,4})/, '$1-$2');
+    } else if (value.length >= 8) {
+        value = value.replace(/(\d{3})(\d{4})(\d{1,4})/, '$1-$2-$3');
+    }
+    this.value = value;
 });
 </script>
 

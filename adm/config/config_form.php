@@ -23,6 +23,8 @@ include_once CM_ADMIN_PATH.'/admin.head.php';
 					</div>
 					<div class="card-body p-4">
 						<form action="./config_form_update.php" method="post">
+							<!-- CSRF 토큰 (예시) -->
+							<!-- <input type="hidden" name="csrf_token" value="<?php // echo htmlspecialchars($_SESSION['csrf_token']); ?>"> -->
 							<!-- 사이트 정보 섹션 -->
 							<div class="mb-5">
 								<h6 class="text-muted fw-bold mb-3">
@@ -40,7 +42,7 @@ include_once CM_ADMIN_PATH.'/admin.head.php';
 										</span>
 										<input type="text" class="form-control" id="siteTitle" name="site_title" 
 											   placeholder="홈페이지 제목을 입력하세요" 
-											   value="<?php echo $config['site_title'] ?? '';?>" required>
+											   value="<?php echo htmlspecialchars($config['site_title'] ?? '');?>" required>
 									</div>
 								</div>
 								
@@ -55,7 +57,7 @@ include_once CM_ADMIN_PATH.'/admin.head.php';
 										</span>
 										<input type="email" class="form-control" id="adminEmail" name="admin_email" 
 											   placeholder="관리자 이메일을 입력하세요" 
-											   value="<?php echo $config['admin_email'] ?? '';?>" required>
+											   value="<?php echo htmlspecialchars($config['admin_email'] ?? '');?>" required>
 									</div>
 								</div>
 								
@@ -69,7 +71,7 @@ include_once CM_ADMIN_PATH.'/admin.head.php';
 											<i class="fas fa-mobile-alt"></i>
 										</span>
 										<input type="tel" class="form-control" id="contactNumber" name="contact_number" 
-											   value="<?php echo $config['contact_number'] ?? '';?>" 
+											   value="<?php echo htmlspecialchars($config['contact_number'] ?? '');?>" 
 											   placeholder="연락처를 입력하세요 (예: 010-1234-5678)">
 									</div>
 								</div>
@@ -95,7 +97,7 @@ include_once CM_ADMIN_PATH.'/admin.head.php';
 											<i class="fas fa-unlock"></i>
 										</span>
 										<textarea class="form-control" id="ip_access" name="ip_access" rows="4" 
-												  placeholder="예:&#10;192.168.1.1&#10;123.123.+&#10;10.0.0.1"><?php echo $config['ip_access'] ?? '';?></textarea>
+												  placeholder="예:&#10;192.168.1.1&#10;123.123.+&#10;10.0.0.1"><?php echo htmlspecialchars($config['ip_access'] ?? '');?></textarea>
 									</div>
 								</div>
 								
@@ -113,7 +115,7 @@ include_once CM_ADMIN_PATH.'/admin.head.php';
 											<i class="fas fa-ban"></i>
 										</span>
 										<textarea class="form-control" id="ip_block" name="ip_block" rows="4" 
-												  placeholder="예:&#10;192.168.1.100&#10;123.123.+&#10;10.0.0.100"><?php echo $config['ip_block'] ?? '';?></textarea>
+												  placeholder="예:&#10;192.168.1.100&#10;123.123.+&#10;10.0.0.100"><?php echo htmlspecialchars($config['ip_block'] ?? '');?></textarea>
 									</div>
 								</div>
 							</div>
@@ -139,7 +141,7 @@ include_once CM_ADMIN_PATH.'/admin.head.php';
 											<i class="fas fa-globe"></i>
 										</span>
 										<input type="text" class="form-control" id="recaptcha_site_key" name="recaptcha_site_key" 
-											   value="<?php echo $config['recaptcha_site_key'] ?? '';?>" 
+											   value="<?php echo htmlspecialchars($config['recaptcha_site_key'] ?? '');?>" 
 											   placeholder="Google reCAPTCHA Site Key를 입력하세요">
 									</div>
 								</div>
@@ -154,7 +156,7 @@ include_once CM_ADMIN_PATH.'/admin.head.php';
 											<i class="fas fa-shield-alt"></i>
 										</span>
 										<input type="password" class="form-control" id="recaptcha_secret_key" name="recaptcha_secret_key" 
-											   value="<?php echo $config['recaptcha_secret_key'] ?? '';?>" 
+											   value="<?php echo htmlspecialchars($config['recaptcha_secret_key'] ?? '');?>" 
 											   placeholder="Google reCAPTCHA Secret Key를 입력하세요">
 										<button class="btn btn-outline-secondary" type="button" id="togglePassword">
 											<i class="fas fa-eye"></i>

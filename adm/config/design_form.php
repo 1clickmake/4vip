@@ -77,6 +77,8 @@ include_once CM_ADMIN_PATH.'/admin.head.php';
                         </div>
                         <div class="card-body p-4">
                             <form action="./design_form_update.php" method="post" id="designForm">
+								<!-- CSRF 토큰 (예시) -->
+								<!-- <input type="hidden" name="csrf_token" value="<?php // echo htmlspecialchars($_SESSION['csrf_token']); ?>"> -->
 								<div class="row">
 									<div class="col-md-6">
 										<!-- 커뮤니티 템플릿 선택 -->
@@ -94,8 +96,8 @@ include_once CM_ADMIN_PATH.'/admin.head.php';
 													$folderDirectory = CM_PATH.'/template/community';
 													$folders = getSubdirectories($folderDirectory);
 													foreach ($folders as $folder) {
-													?>
-													<option value="<?php echo $folder;?>" <?php echo ($folder == $config['template_id']) ? 'selected' : ''; ?>><?php echo $folder;?></option>
+													    $safe_folder = htmlspecialchars($folder);
+													?><option value="<?php echo $safe_folder;?>" <?php echo ($folder == $config['template_id']) ? 'selected' : ''; ?>><?php echo $safe_folder;?></option>
 													<?php } ?>
 												</select>
 											</div>
@@ -122,8 +124,8 @@ include_once CM_ADMIN_PATH.'/admin.head.php';
 													$folderDirectory = CM_PATH.'/template/shop';
 													$folders = getSubdirectories($folderDirectory);
 													foreach ($folders as $folder) {
-													?>
-													<option value="<?php echo $folder;?>" <?php echo ($folder == $config['shop_template_id']) ? 'selected' : ''; ?>><?php echo $folder;?></option>
+													    $safe_folder = htmlspecialchars($folder);
+													?><option value="<?php echo $safe_folder;?>" <?php echo ($folder == $config['shop_template_id']) ? 'selected' : ''; ?>><?php echo $safe_folder;?></option>
 													<?php } ?>
 												</select>
 											</div>

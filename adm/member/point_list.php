@@ -42,11 +42,15 @@ $result = sql_list($options);
 $total_pages = $result['total_pages'];
 $page = $result['current_page'];
 ?>
+<input type="hidden" id="sort_field" value="<?php echo $sort_field;?>">
+<input type="hidden" id="sort_order" value="<?php echo $sort_order;?>">
 
     <!-- Main Content -->
     <div class="main-content shifted" id="mainContent">
         <div class="container-fluid">
-			<h2 class="admin-list-title"><?php echo $cm_title;?></h2>
+			<div class="d-flex justify-content-between align-items-center mb-4">
+				<h2 class="admin-list-title"><?php echo $cm_title;?></h2>
+			</div>
 			
 			<!-- 검색 폼 -->
 			<div class="card mb-4">
@@ -73,32 +77,31 @@ $page = $result['current_page'];
 			</div>
 
 			<div class="table-responsive">
-				<!-- 포인트 리스트 -->
 				<table class="table table-sm table-striped table-bordered align-middle" style="min-width:1200px;">
-					<thead class="table-dark  text-center">
+					<thead class="table-dark text-center">
 						<tr>
 							<th scope="col">No</th>
 							<th scope="col" class="sortable" data-field="user_id">
-								회원 아이디 <i class="bi bi-arrow-down-up"></i>
+								회원 아이디
 								<?php echo get_sort_icon($sort_field, $sort_order, 'user_id'); ?>
 							</th>
 							<th scope="col" class="sortable" data-field="description">
-								포인트 내용 <i class="bi bi-arrow-down-up"></i>
+								포인트 내용
 								<?php echo get_sort_icon($sort_field, $sort_order, 'description'); ?>
 							</th>
 							<th scope="col" class="sortable" data-field="point">
-								지급포인트 <i class="bi bi-arrow-down-up"></i>
+								지급포인트
 								<?php echo get_sort_icon($sort_field, $sort_order, 'point'); ?>
 							</th>
 							<th scope="col" class="sortable" data-field="created_at">
-								등록일 <i class="bi bi-arrow-down-up"></i>
+								등록일
 								<?php echo get_sort_icon($sort_field, $sort_order, 'created_at'); ?>
 							</th>
-							<th>삭제</th>
+							<th scope="col">삭제</th>
 						</tr>
 					</thead>
 					<tbody>
-						<?php if (empty($result)){ ?>
+						<?php if (empty($result['list'])){ ?>
 							<tr>
 								<td colspan="6" class="text-center">포인트 내역이 없습니다.</td>
 							</tr>
@@ -108,118 +111,67 @@ $page = $result['current_page'];
 							foreach ($result['list'] as $index => $list) {
 								$list_no = $start_number - $index;
 							?>
-								<tr class=" text-center">
-									<td><?php echo $list_no; ?></td>
-									<td><?php echo htmlspecialchars($list['user_id']); ?></td>
-									<td><?php echo htmlspecialchars($list['description']); ?></td>
-									<td><?php echo number_format($list['point']); ?></td>
-									<td><?php echo $list['created_at']; ?></td>
-									<td>
-										<form action="point_update.php" method="POST" onsubmit="return confirm('정말로 삭제하시겠습니까?');">
-											<input type="hidden" name="id" value="<?php echo $list['id']; ?>">
-											<input type="hidden" name="action" value="delete">
-											<button type="submit" class="btn btn-danger btn-sm">삭제</button>
-										</form>
-									</td>
-								</tr>
+							<tr class="text-center">
+								<td><?php echo $list_no; ?></td>
+								<td><?php echo htmlspecialchars($list['user_id'] ?? ''); ?></td>
+								<td><?php echo htmlspecialchars($list['description'] ?? ''); ?></td>
+								<td><?php echo number_format($list['point']); ?></td>
+								<td><?php echo $list['created_at']; ?></td>
+								<td>
+									<form action="point_update.php" method="POST" onsubmit="return confirm('정말로 삭제하시겠습니까?');" style="display: inline;">
+										<input type="hidden" name="id" value="<?php echo $list['id']; ?>">
+										<input type="hidden" name="action" value="delete">
+										<button type="submit" class="btn btn-danger btn-sm">삭제</button>
+									</form>
+								</td>
+							</tr>
 							<?php } ?>
 						<?php } ?>
 					</tbody>
 				</table>
 			</div>
 			
-			<div>
-				<!-- 페이지네이션 -->
-				<?php echo render_pagination($page, $total_pages, $_GET);?>
-				<!-- 페이지네이션 끝-->
-			</div>
+			<!-- 페이지네이션 -->
+			<?php echo render_pagination($page, $total_pages, $_GET);?>
+			<!-- 페이지네이션 끝-->
 
 			<!-- 포인트 지급 폼 -->
-			<h3 class="mt-5">포인트 지급</h3>
-			<form action="point_update.php" method="POST" class="row g-3">
-				<input type="hidden" name="action" value="add">
-				<div class="col-md-4">
-					<label for="user_id" class="form-label">회원 아이디</label>
-					<input type="text" class="form-control" id="user_id" name="user_id" required>
+			<div class="card mt-5">
+				<div class="card-header">
+					<h3 class="mb-0">포인트 지급</h3>
 				</div>
-				<div class="col-md-4">
-					<label for="description" class="form-label">포인트 내용</label>
-					<input type="text" class="form-control" id="description" name="description" required>
+				<div class="card-body">
+					<form action="point_update.php" method="POST" class="row g-3">
+						<input type="hidden" name="action" value="add">
+						<div class="col-md-4">
+							<label for="user_id" class="form-label">회원 아이디</label>
+							<input type="text" class="form-control" id="user_id" name="user_id" required>
+						</div>
+						<div class="col-md-4">
+							<label for="description" class="form-label">포인트 내용</label>
+							<input type="text" class="form-control" id="description" name="description" required>
+						</div>
+						<div class="col-md-4">
+							<label for="point" class="form-label">지급 포인트</label>
+							<input type="number" class="form-control" id="point" name="point" required min="1">
+						</div>
+						
+						<div class="col-12">
+							<button type="submit" class="btn btn-primary">포인트 지급</button>
+						</div>
+					</form>
 				</div>
-				<div class="col-md-4">
-					<label for="point" class="form-label">지급 포인트</label>
-					<input type="number" class="form-control" id="point" name="point" required min="1">
-				</div>
-				
-				<div class="col-12">
-					<button type="submit" class="btn btn-primary">포인트 지급</button>
-				</div>
-			</form>
+			</div>
 		</div>
     </div>
 
-    
+<script>
+    function validateSearch() {
+        // 검색 유효성 검사 로직이 필요하면 여기에 추가
+        return true;
+    }
+</script>
+   
 <?php
 include_once CM_ADMIN_PATH.'/admin.tail.php';
 ?>
-
-<script>
-function validateSearch() {
-    const searchType = document.getElementById('search_type').value;
-    const searchKeyword = document.getElementById('search_keyword').value.trim();
-    
-    if (!searchType) {
-        alert('검색 구분을 선택해주세요.');
-        document.getElementById('search_type').focus();
-        return false;
-    }
-    
-    if (!searchKeyword) {
-        alert('검색어를 입력해주세요.');
-        document.getElementById('search_keyword').focus();
-        return false;
-    }
-    
-    return true;
-}
-
-// 정렬 처리 함수
-document.addEventListener('DOMContentLoaded', function() {
-    const sortableHeaders = document.querySelectorAll('.sortable');
-    
-    sortableHeaders.forEach(header => {
-        header.style.cursor = 'pointer';
-        header.addEventListener('click', function() {
-            const field = this.dataset.field;
-            const currentSort = '<?php echo $sort_field; ?>';
-            const currentOrder = '<?php echo $sort_order; ?>';
-            
-            let newOrder = 'ASC';
-            if (field === currentSort && currentOrder === 'ASC') {
-                newOrder = 'DESC';
-            }
-            
-            // 현재 URL 파라미터 가져오기
-            const urlParams = new URLSearchParams(window.location.search);
-            urlParams.set('sort', field);
-            urlParams.set('order', newOrder);
-            
-            // 페이지 이동
-            window.location.href = window.location.pathname + '?' + urlParams.toString();
-        });
-    });
-});
-</script>
-
-<style>
-.sortable {
-    position: relative;
-    padding-right: 20px !important;
-}
-.sortable i {
-    position: absolute;
-    right: 5px;
-    top: 50%;
-    transform: translateY(-50%);
-}
-</style>

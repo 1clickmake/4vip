@@ -58,7 +58,7 @@ try {
 
 //스킨경로
 $bo_title = "게시글 보기";
-include_once CM_BOARD_PATH.'/board_skin/basic/view.skin.php';
+include_once CM_TEMPLATE_PATH.'/skin/board_skin/'.$bo['board_skin'].'/view.skin.php';
 
 include_once CM_PATH.'/tail.php';
 ?>

@@ -12,6 +12,7 @@ if(isset($cm_title) && $cm_title !== ""){
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title><?php echo $cm_site_title;?></title>
 		
+		<script src="<?php echo CM_URL?>/js/cm.js"></script>
 		<?php
 		if (defined('CM_IS_ADMIN')) {
 			include_once CM_ADMIN_PATH.'/add/add.stylesheet.php';
@@ -70,6 +71,7 @@ if(isset($cm_title) && $cm_title !== ""){
 			}
 		}
 		?>
+		<script src="<?php echo CM_URL?>/js/common.js"></script>
 		<?php if($recaptcha_site && $recaptcha_secret){ //구를 리캡챠?>
 		<script src="https://www.google.com/recaptcha/api.js?render=<?php echo $recaptcha_site;?>"></script>
 		<?php } ?>

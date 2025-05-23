@@ -70,8 +70,8 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
             </a>
         </div>
 
-        <div class="row justify-content-center">
-            <div class="col-lg-10 col-xl-9">
+        <div class="row">
+            <div class="col-12">
                 <div class="card shadow-sm">
                     <div class="card-header bg-light">
                         <h5 class="card-title mb-0">

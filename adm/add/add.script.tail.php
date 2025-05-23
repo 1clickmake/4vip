@@ -2,7 +2,6 @@
 if (!defined('_CMBOARD_')) exit; // 개별 페이지 접근 불가
 ?>
 <?php if(defined('_ADMIN_INDEX_')) {?>
-<script src="<?php echo CM_ADMIN_URL?>/js/visit_chart.js"></script>
 <script>
 //통계차트
     document.addEventListener('DOMContentLoaded', function() {

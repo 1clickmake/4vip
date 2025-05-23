@@ -58,8 +58,8 @@ if (isset($_GET['po_id']) && !empty($_GET['po_id'])) {
                 </a>
             </div>
 
-            <div class="row justify-content-center">
-                <div class="col-lg-10 col-xl-9">
+            <div class="row">
+                <div class="col-12">
                     <div class="card chart-card shadow-lg">
                         <div class="card-header">
                             <h5 class="card-title mb-0">
@@ -71,8 +71,9 @@ if (isset($_GET['po_id']) && !empty($_GET['po_id'])) {
                             <form id="popupForm" method="post" action="popup_form_update.php">
                                 <input type="hidden" name="mode" value="<?php echo $mode; ?>">
                                 <?php if ($mode == 'update') : ?>
-                                    <input type="hidden" name="po_id" value="<?php echo $popup['po_id']; ?>">
+                                    <input type="hidden" name="po_id" value="<?php echo htmlspecialchars($popup['po_id']); ?>">
                                 <?php endif; ?>
+                                
                                 
                                 <!-- 기본 정보 섹션 -->
                                 <div class="mb-5">
@@ -432,23 +433,27 @@ $(document).ready(function() {
         const left = $('#po_left').val() || 0;
         
         const previewWindow = window.open('', 'popup_preview', 
-            `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,resizable=yes`);
+            `width=${parseInt(width)},height=${parseInt(height)},top=${parseInt(top)},left=${parseInt(left)},scrollbars=yes,resizable=yes`);
         
+        const safeTitle = $('<textarea />').html(title).text(); // jQuery를 사용한 간단한 HTML 이스케이프
         previewWindow.document.write(`
             <html>
                 <head>
-                    <title>${title}</title>
+                    <title>${safeTitle}</title>
                     <style>
-                        body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
+                        body { margin: 0; overflow: hidden; }
+						p {margin:0 !important; padding:0 !important;}
                         .popup-header { background: #f8f9fa; padding: 10px; border-bottom: 1px solid #dee2e6; }
-                        .popup-content { padding: 20px; }
+                        .popup-content { padding:10px; height: calc(100vh - 50px); overflow: auto; }
                         .popup-close { float: right; cursor: pointer; color: #6c757d; }
+                        .popup-content img { max-width: 100% !important; height: auto !important; }
+                        .popup-content * { max-width: 100%; }
                     </style>
                 </head>
                 <body>
                     <div class="popup-header">
                         <span class="popup-close" onclick="window.close()">✕</span>
-                        <strong>${title}</strong>
+                        <strong>${safeTitle}</strong>
                     </div>
                     <div class="popup-content">
                         ${content}

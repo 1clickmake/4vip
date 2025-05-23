@@ -85,8 +85,8 @@ include_once CM_ADMIN_PATH.'/admin.head.php';
                                                 $menus = $stmt->fetchAll();
                                                 
                                                 foreach ($menus as $menu) {
-                                                    echo '<option value="' . $menu['menu_id'] . '">' . $prefix . $menu['menu_name'] . ' (레벨 ' . $menu['menu_level'] . ')</option>';
-                                                    display_menu_options($pdo, $menu['menu_id'], $level + 1, $prefix . '— ');
+                                                    echo '<option value="' . htmlspecialchars($menu['menu_id']) . '">' . $prefix . htmlspecialchars($menu['menu_name']) . ' (레벨 ' . htmlspecialchars($menu['menu_level']) . ')</option>';
+                                                    display_menu_options($pdo, $menu['menu_id'], $level + 1, $prefix . '—&nbsp;'); // — 뒤 공백 추가
                                                 }
                                             }
                                             display_menu_options($pdo);

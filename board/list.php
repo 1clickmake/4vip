@@ -58,7 +58,7 @@ $start_number = $total_rows - ($page - 1) * 10;
 
 //스킨경로
 //$formAction = CM_BOARD_URL."/write_update.php";
-include_once CM_BOARD_PATH.'/board_skin/basic/list.skin.php';
+include_once CM_TEMPLATE_PATH.'/skin/board_skin/'.$bo['board_skin'].'/list.skin.php';
 
 include_once CM_PATH.'/tail.php';
 ?>

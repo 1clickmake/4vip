@@ -115,6 +115,8 @@ if (!empty($start_date) || !empty($end_date) || !empty($ip_address)) {
     }
 }
 ?>
+<input type="hidden" id="sort_field" value="<?php echo $sort_field;?>">
+<input type="hidden" id="sort_order" value="<?php echo $sort_order;?>">
 
     <!-- Main Content -->
     <div class="main-content shifted" id="mainContent">
@@ -128,21 +130,26 @@ if (!empty($start_date) || !empty($end_date) || !empty($ip_address)) {
 					<?php if (isset($stats_error)): ?>
 						<div class="alert alert-danger"><?php echo $stats_error; ?></div>
 					<?php else: ?>
-						<p>총 방문자 수: <?php echo $stats['total']; ?></p>
-						<p>오늘 방문자 수: <?php echo $stats['today']; ?></p>
-						<h5>상위 5개 IP</h5>
-						<ul>
-							<?php foreach ($stats['top_ips'] as $ip): ?>
-								<li><?php echo htmlspecialchars($ip['ip_address']); ?>: <?php echo $ip['count']; ?>회</li>
-							<?php endforeach; ?>
-						</ul>
+						<div class="row">
+							<div class="col-md-6">
+								<p><strong>총 방문자 수:</strong> <?php echo number_format($stats['total']); ?></p>
+								<p><strong>오늘 방문자 수:</strong> <?php echo number_format($stats['today']); ?></p>
+							</div>
+							<div class="col-md-6">
+								<h6>상위 5개 IP</h6>
+								<ul class="list-unstyled">
+									<?php foreach ($stats['top_ips'] as $ip): ?>
+										<li class="small"><?php echo htmlspecialchars($ip['ip_address']); ?>: <?php echo number_format($ip['count']); ?>회</li>
+									<?php endforeach; ?>
+								</ul>
+							</div>
+						</div>
 					<?php endif; ?>
 				</div>
 			</div>
 			
-			<!-- 날짜 구간 검색 및 삭제 -->
+			<!-- 검색 폼 -->
 			<div class="card mb-4">
-				<div class="card-header">날짜 구간으로 검색 및 삭제</div>
 				<div class="card-body">
 					<?php if (isset($delete_message)): ?>
 						<div class="alert <?php echo strpos($delete_message, '실패') ? 'alert-danger' : 'alert-success'; ?>">
@@ -154,29 +161,25 @@ if (!empty($start_date) || !empty($end_date) || !empty($ip_address)) {
 							<?php echo $search_message; ?>
 						</div>
 					<?php endif; ?>
-					<form method="GET" id="searchForm">
-						<div class="row mb-3">
-							<div class="col-md-4">
-								<label for="start_date" class="form-label">시작 날짜</label>
-								<input type="date" class="form-control" id="start_date" name="start_date" value="<?php echo $start_date; ?>" required>
-							</div>
-							<div class="col-md-4">
-								<label for="end_date" class="form-label">종료 날짜</label>
-								<input type="date" class="form-control" id="end_date" name="end_date" value="<?php echo $end_date; ?>" required>
-							</div>
-							<div class="col-md-4">
-								<label for="ip_address" class="form-label">IP 주소 (선택사항)</label>
-								<input type="text" class="form-control" id="ip_address" name="ip_address" value="<?php echo $ip_address; ?>" placeholder="예: 192.168.1.1">
-							</div>
+					<form method="GET" class="row g-3" id="searchForm">
+						<div class="col-md-3">
+							<label for="start_date" class="form-label">시작 날짜 <span class="text-danger">*</span></label>
+							<input type="date" class="form-control" id="start_date" name="start_date" value="<?php echo $start_date; ?>" required>
 						</div>
-						<div class="row">
-							<div class="col-md-12 text-end">
-								<button type="submit" class="btn btn-primary me-2">검색</button>
-								<button type="button" class="btn btn-danger me-2" onclick="confirmDelete()">삭제</button>
-								<?php if (!empty($start_date) || !empty($end_date) || !empty($ip_address)): ?>
-								<a href="<?php echo $_SERVER['PHP_SELF']; ?>" class="btn btn-secondary">전체보기</a>
-								<?php endif; ?>
-							</div>
+						<div class="col-md-3">
+							<label for="end_date" class="form-label">종료 날짜 <span class="text-danger">*</span></label>
+							<input type="date" class="form-control" id="end_date" name="end_date" value="<?php echo $end_date; ?>" required>
+						</div>
+						<div class="col-md-3">
+							<label for="ip_address" class="form-label">IP 주소 (선택사항)</label>
+							<input type="text" class="form-control" id="ip_address" name="ip_address" value="<?php echo $ip_address; ?>" placeholder="예: 192.168.1.1">
+						</div>
+						<div class="col-md-3 d-flex align-items-end">
+							<button type="submit" class="btn btn-primary me-2">검색</button>
+							<button type="button" class="btn btn-danger me-2" onclick="confirmVisitDelete()">삭제</button>
+							<?php if (!empty($start_date) || !empty($end_date) || !empty($ip_address)): ?>
+							<a href="<?php echo $_SERVER['PHP_SELF']; ?>" class="btn btn-secondary">초기화</a>
+							<?php endif; ?>
 						</div>
 					</form>
 				</div>
@@ -187,25 +190,25 @@ if (!empty($start_date) || !empty($end_date) || !empty($ip_address)) {
 				<table class="table table-sm table-striped table-bordered align-middle" style="min-width:1200px;">
 					<thead class="table-dark text-center">
 						<tr>
-							<th scope="col">ID</th>
+							<th scope="col">No</th>
 							<th scope="col" class="sortable" data-field="ip_address">
-								IP 주소 <i class="bi bi-arrow-down-up"></i>
+								IP 주소 
 								<?php echo get_sort_icon($sort_field, $sort_order, 'ip_address'); ?>
 							</th>
 							<th scope="col" class="sortable" data-field="visit_time">
-								방문 시간 <i class="bi bi-arrow-down-up"></i>
+								방문 시간
 								<?php echo get_sort_icon($sort_field, $sort_order, 'visit_time'); ?>
 							</th>
 							<th scope="col" class="sortable" data-field="user_agent">
-								사용자 에이전트 <i class="bi bi-arrow-down-up"></i>
+								사용자 에이전트
 								<?php echo get_sort_icon($sort_field, $sort_order, 'user_agent'); ?>
 							</th>
 							<th scope="col" class="sortable" data-field="referer">
-								참조 URL <i class="bi bi-arrow-down-up"></i>
+								참조 URL
 								<?php echo get_sort_icon($sort_field, $sort_order, 'referer'); ?>
 							</th>
 							<th scope="col" class="sortable" data-field="visit_count">
-								방문 횟수 <i class="bi bi-arrow-down-up"></i>
+								방문 횟수
 								<?php echo get_sort_icon($sort_field, $sort_order, 'visit_count'); ?>
 							</th>
 						</tr>
@@ -225,9 +228,9 @@ if (!empty($start_date) || !empty($end_date) || !empty($ip_address)) {
 								<td><?php echo $list_no;?></td>
 								<td><?php echo htmlspecialchars($list['ip_address']);?></td>
 								<td><?php echo $list['visit_time'];?></td>
-								<td><?php echo htmlspecialchars($list['user_agent']);?></td>
-								<td><?php echo htmlspecialchars($list['referer'] ?? '');?></td>
-								<td><?php echo $list['visit_count'];?></td>
+								<td class="text-start" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="<?php echo htmlspecialchars($list['user_agent']);?>"><?php echo htmlspecialchars($list['user_agent']);?></td>
+								<td class="text-start" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="<?php echo htmlspecialchars($list['referer'] ?? '');?>"><?php echo htmlspecialchars($list['referer'] ?? '');?></td>
+								<td><?php echo number_format($list['visit_count']);?></td>
 							</tr>
 							<?php } ?>
 						<?php } ?>
@@ -240,89 +243,6 @@ if (!empty($start_date) || !empty($end_date) || !empty($ip_address)) {
 			<!-- 페이지네이션 끝-->
 		</div>
     </div>
-
-<script>
-// 정렬 처리 함수
-document.addEventListener('DOMContentLoaded', function() {
-    const sortableHeaders = document.querySelectorAll('.sortable');
-    
-    sortableHeaders.forEach(header => {
-        header.style.cursor = 'pointer';
-        header.addEventListener('click', function() {
-            const field = this.dataset.field;
-            const currentSort = '<?php echo $sort_field; ?>';
-            const currentOrder = '<?php echo $sort_order; ?>';
-            
-            let newOrder = 'ASC';
-            if (field === currentSort && currentOrder === 'ASC') {
-                newOrder = 'DESC';
-            }
-            
-            // 현재 URL 파라미터 가져오기
-            const urlParams = new URLSearchParams(window.location.search);
-            
-            // 기존 검색 조건 유지
-            const startDate = document.getElementById('start_date').value;
-            const endDate = document.getElementById('end_date').value;
-            const ipAddress = document.getElementById('ip_address').value;
-            
-            if (startDate) urlParams.set('start_date', startDate);
-            if (endDate) urlParams.set('end_date', endDate);
-            if (ipAddress) urlParams.set('ip_address', ipAddress);
-            
-            // 정렬 파라미터 설정
-            urlParams.set('sort', field);
-            urlParams.set('order', newOrder);
-            
-            // 페이지 이동
-            window.location.href = window.location.pathname + '?' + urlParams.toString();
-        });
-    });
-});
-
-// 삭제 확인 함수
-function confirmDelete() {
-    if (confirm('정말로 삭제하시겠습니까?')) {
-        const form = document.getElementById('searchForm');
-        const deleteForm = document.createElement('form');
-        deleteForm.method = 'POST';
-        deleteForm.action = window.location.pathname;
-        
-        // 검색 폼의 모든 입력값을 복사
-        const inputs = form.querySelectorAll('input');
-        inputs.forEach(input => {
-            const hiddenInput = document.createElement('input');
-            hiddenInput.type = 'hidden';
-            hiddenInput.name = input.name;
-            hiddenInput.value = input.value;
-            deleteForm.appendChild(hiddenInput);
-        });
-        
-        // 삭제 액션 추가
-        const actionInput = document.createElement('input');
-        actionInput.type = 'hidden';
-        actionInput.name = 'delete_by_date';
-        actionInput.value = '1';
-        deleteForm.appendChild(actionInput);
-        
-        document.body.appendChild(deleteForm);
-        deleteForm.submit();
-    }
-}
-</script>
-
-<style>
-.sortable {
-    position: relative;
-    padding-right: 20px !important;
-}
-.sortable i {
-    position: absolute;
-    right: 5px;
-    top: 50%;
-    transform: translateY(-50%);
-}
-</style>
 
 <?php
 include_once CM_ADMIN_PATH.'/admin.tail.php';
