@@ -1024,3 +1024,27 @@ function is_image_file(string $filename): bool {
     $file_ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
     return in_array($file_ext, ['jpg', 'jpeg', 'png', 'gif', 'webp']);
 }
+
+/**
+ * 다국어 문자열을 가져옵니다. 한국어를 기본값으로 사용합니다.
+ *
+ * @param string $key 다국어 키
+ * @param string $default 기본값 (한국어)
+ * @return string 번역된 문자열
+ */
+function get_lang(string $key, string $default = ''): string {
+    global $lang;
+    return htmlspecialchars($lang->get($key, $default));
+}
+
+/**
+ * HTML 태그가 포함된 다국어 문자열을 가져옵니다.
+ *
+ * @param string $key 다국어 키
+ * @param string $default 기본값 (한국어)
+ * @return string 번역된 문자열 (HTML 태그 포함)
+ */
+function get_lang_html(string $key, string $default = ''): string {
+    global $lang;
+    return $lang->get($key, $default);
+}

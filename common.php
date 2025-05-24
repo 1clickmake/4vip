@@ -8,7 +8,11 @@ function clean_xss_tags($str) {
 }
 
 require_once $_SERVER['DOCUMENT_ROOT'] .'/data/config.php';
-session_start();
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 
 $scheme = isset($_SERVER['REQUEST_SCHEME']) ? $_SERVER['REQUEST_SCHEME'] : (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http');
 $host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : $_SERVER['SERVER_NAME'];
@@ -19,7 +23,6 @@ define('CM_URL', $domain_url);
 
 require_once(CM_PATH.'/config.php');//상수 선언
 require_once(CM_LIB_PATH.'/common.lib.php'); // 공통 라이브러리
-
 
 //관리자 환경설정
 $sql = "SELECT * FROM `cm_config` WHERE `id` = :id";
@@ -106,6 +109,8 @@ if ($is_admin != 'super') {
 	get_visit();
 }
 
+
+
 //템플릿 관련 상수
 define('CM_TEMPLATE_PATH', CM_PATH.'/template/community/'.$config['template_id']);
 define('CM_TEMPLATE_URL', CM_URL.'/template/community/'.$config['template_id']);
@@ -113,4 +118,30 @@ define('CM_TEMPLATE_URL', CM_URL.'/template/community/'.$config['template_id']);
 //쇼핑몰 템플릿 상수
 define('CM_SHOP_TEMPLATE_PATH', CM_PATH.'/template/shop/'.$config['shop_template_id']);
 define('CM_SHOP_TEMPLATE_URL', CM_URL.'/template/shop/'.$config['shop_template_id']);
+
+require_once(CM_LIB_PATH.'/Language.php'); // 다국어 클래스 
+// Language 클래스 생성자에 전달할 초기 시도 언어 설정
+// Language 클래스 내부에서 세션 -> 이 값 -> 내부 폴백 순으로 우선순위 결정
+$constructorAttemptLang = 'ko'; // 사이트 기본 선호 언어
+$lang = new Language($constructorAttemptLang, CM_LIB_PATH . '/languages/');
+
+// GET 요청으로 언어 변경 처리
+if (isset($_REQUEST['lang'])) {
+    $selectedLang = $_REQUEST['lang'];
+    if ($lang->setLanguage($selectedLang)) {
+        // 언어 변경 성공 시, 'lang' GET 파라미터를 URL에서 제거하기 위해 리다이렉트
+        $currentUrl = strtok($_SERVER["REQUEST_URI"], '?');
+        $queryParams = $_REQUEST;
+        unset($queryParams['lang']);
+        if (!empty($queryParams)) {
+            $currentUrl .= '?' . http_build_query($queryParams);
+        }
+        header("Location: " . $currentUrl);
+        exit;
+    } else {
+        // 언어 변경 실패 시 로그 기록
+        error_log("Failed to change language to: " . $selectedLang);
+    }
+}
+
 ?>

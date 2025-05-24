@@ -1,195 +1,200 @@
+SET NAMES utf8mb4;
+
+-- 게시판 테이블
 DROP TABLE IF EXISTS `cm_board`;
 CREATE TABLE `cm_board` (
-  `board_num` int(11) NOT NULL AUTO_INCREMENT,
-  `group_id` varchar(100) NOT NULL,
-  `board_id` varchar(100) NOT NULL,
-  `user_id` varchar(255) NOT NULL,
-  `email` varchar(100) NOT NULL,
-  `name` varchar(50) NOT NULL,
-  `password` varchar(255) NOT NULL,
-  `title` varchar(255) NOT NULL,
-  `content` text NOT NULL,
-  `ip` varchar(255) NOT NULL,
-  `view_count` int(11) DEFAULT '0',
-  `reg_date` datetime DEFAULT CURRENT_TIMESTAMP,
-  `update_date` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `board_num` int(11) NOT NULL AUTO_INCREMENT COMMENT '게시물 고유 번호',
+  `group_id` varchar(100) NOT NULL COMMENT '게시판 그룹 ID',
+  `board_id` varchar(100) NOT NULL COMMENT '게시판 ID',
+  `user_id` varchar(255) NOT NULL COMMENT '작성자 ID',
+  `email` varchar(100) NOT NULL COMMENT '작성자 이메일',
+  `name` varchar(50) NOT NULL COMMENT '작성자 이름',
+  `password` varchar(255) NOT NULL COMMENT '게시물 비밀번호 (비회원용)',
+  `title` varchar(255) NOT NULL COMMENT '게시물 제목',
+  `content` text NOT NULL COMMENT '게시물 내용',
+  `ip` varchar(255) NOT NULL COMMENT '작성자 IP 주소',
+  `view_count` int(11) DEFAULT '0' COMMENT '조회수',
+  `reg_date` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '등록 일시',
+  `update_date` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '수정 일시',
   PRIMARY KEY (`board_num`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='게시판 게시물 테이블';
 
-
+-- 게시판 댓글 테이블
 DROP TABLE IF EXISTS `cm_board_comment`;
 CREATE TABLE `cm_board_comment` (
-  `comment_id` int(11) NOT NULL AUTO_INCREMENT,
-  `board_id` varchar(100) NOT NULL,
-  `board_num` int(11) NOT NULL,
-  `user_id` varchar(255) DEFAULT NULL,
-  `name` varchar(50) NOT NULL,
-  `email` varchar(100) NOT NULL,
-  `password` varchar(255) NOT NULL,
-  `content` text NOT NULL,
-  `ip` varchar(255) NOT NULL,
-  `reg_date` datetime DEFAULT CURRENT_TIMESTAMP,
-  `update_date` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `comment_id` int(11) NOT NULL AUTO_INCREMENT COMMENT '댓글 고유 번호',
+  `board_id` varchar(100) NOT NULL COMMENT '게시판 ID',
+  `board_num` int(11) NOT NULL COMMENT '게시물 번호 (외래 키)',
+  `user_id` varchar(255) DEFAULT NULL COMMENT '댓글 작성자 ID',
+  `name` varchar(50) NOT NULL COMMENT '댓글 작성자 이름',
+  `email` varchar(100) NOT NULL COMMENT '댓글 작성자 이메일',
+  `password` varchar(255) NOT NULL COMMENT '댓글 비밀번호 (비회원용)',
+  `content` text NOT NULL COMMENT '댓글 내용',
+  `ip` varchar(255) NOT NULL COMMENT '작성자 IP 주소',
+  `reg_date` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '등록 일시',
+  `update_date` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '수정 일시',
   PRIMARY KEY (`comment_id`),
   KEY `board_num` (`board_num`),
   CONSTRAINT `cm_board_comment_ibfk_1` FOREIGN KEY (`board_num`) REFERENCES `cm_board` (`board_num`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='게시판 댓글 테이블';
 
-
+-- 게시판 파일 테이블
 DROP TABLE IF EXISTS `cm_board_file`;
 CREATE TABLE `cm_board_file` (
-  `file_id` int(11) NOT NULL AUTO_INCREMENT,
-  `board_id` varchar(255) NOT NULL,
-  `board_num` int(11) NOT NULL,
-  `original_filename` varchar(255) NOT NULL,
-  `stored_filename` varchar(255) NOT NULL,
-  `file_size` int(11) NOT NULL,
-  `file_type` varchar(100) NOT NULL,
-  `reg_date` datetime DEFAULT CURRENT_TIMESTAMP,
+  `file_id` int(11) NOT NULL AUTO_INCREMENT COMMENT '파일 고유 번호',
+  `board_id` varchar(255) NOT NULL COMMENT '게시판 ID',
+  `board_num` int(11) NOT NULL COMMENT '게시물 번호 (외래 키)',
+  `original_filename` varchar(255) NOT NULL COMMENT '원본 파일명',
+  `stored_filename` varchar(255) NOT NULL COMMENT '서버에 저장된 파일명',
+  `file_size` int(11) NOT NULL COMMENT '파일 크기 (바이트)',
+  `file_type` varchar(100) NOT NULL COMMENT '파일 MIME 타입',
+  `reg_date` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '파일 업로드 일시',
   PRIMARY KEY (`file_id`),
   KEY `board_id` (`board_num`),
   CONSTRAINT `cm_board_file_ibfk_1` FOREIGN KEY (`board_num`) REFERENCES `cm_board` (`board_num`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='게시판 첨부 파일 테이블';
 
-
+-- 게시판 그룹 테이블
 DROP TABLE IF EXISTS `cm_board_group`;
 CREATE TABLE `cm_board_group` (
-  `group_id` varchar(100) NOT NULL,
-  `group_name` varchar(255) NOT NULL DEFAULT '',
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `group_id` varchar(100) NOT NULL COMMENT '게시판 그룹 ID',
+  `group_name` varchar(255) NOT NULL DEFAULT '' COMMENT '게시판 그룹 이름',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '그룹 생성 일시',
   PRIMARY KEY (`group_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='게시판 그룹 관리 테이블';
 
-
+-- 게시판 목록 테이블
 DROP TABLE IF EXISTS `cm_board_list`;
 CREATE TABLE `cm_board_list` (
-  `board_id` varchar(255) NOT NULL,
-  `board_name` varchar(255) NOT NULL,
-  `group_id` varchar(100) NOT NULL,
-  `group_name` varchar(100) NOT NULL,
-  `board_skin` varchar(50) NOT NULL DEFAULT 'basic',
-  `write_lv` int(11) NOT NULL,
-  `list_lv` int(11) NOT NULL,
-  `view_lv` int(11) NOT NULL,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `board_id` varchar(255) NOT NULL COMMENT '게시판 ID',
+  `board_name` varchar(255) NOT NULL COMMENT '게시판 이름',
+  `group_id` varchar(100) NOT NULL COMMENT '게시판 그룹 ID',
+  `group_name` varchar(100) NOT NULL COMMENT '게시판 그룹 이름',
+  `board_skin` varchar(50) NOT NULL DEFAULT 'basic' COMMENT '게시판 스킨',
+  `write_lv` int(11) NOT NULL COMMENT '쓰기 권한 레벨',
+  `list_lv` int(11) NOT NULL COMMENT '목록 보기 권한 레벨',
+  `view_lv` int(11) NOT NULL COMMENT '게시물 보기 권한 레벨',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT '게시판 생성 일시',
   PRIMARY KEY (`board_id`),
   UNIQUE KEY `board_name` (`board_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='게시판 목록 및 설정 테이블';
 
-
-SET NAMES utf8mb4;
-
+-- 사이트 설정 테이블
 DROP TABLE IF EXISTS `cm_config`;
 CREATE TABLE `cm_config` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `admin_id` varchar(255) NOT NULL,
-  `site_title` varchar(255) NOT NULL,
-  `admin_email` varchar(255) NOT NULL,
-  `contact_number` varchar(50) DEFAULT NULL,
-  `add_meta` text NOT NULL,
-  `template_id` varchar(100) NOT NULL,
-  `shop_template_id` varchar(100) NOT NULL,
-  `ip_access` text NOT NULL COMMENT '접근가능 IP',
-  `ip_block` text NOT NULL COMMENT '접근차단 IP',
-  `recaptcha_site_key` varchar(255) NOT NULL COMMENT '구글캡챠 사이트키',
-  `recaptcha_secret_key` varchar(255) NOT NULL COMMENT '구글캡챠 시크릿키',
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '설정 고유 번호',
+  `admin_id` varchar(255) NOT NULL COMMENT '관리자 ID',
+  `site_title` varchar(255) NOT NULL COMMENT '사이트 제목',
+  `admin_email` varchar(255) NOT NULL COMMENT '관리자 이메일',
+  `contact_number` varchar(50) DEFAULT NULL COMMENT '연락처',
+  `add_meta` text NOT NULL COMMENT '추가 메타 태그',
+  `template_id` varchar(100) NOT NULL COMMENT '사이트 템플릿 ID',
+  `shop_template_id` varchar(100) NOT NULL COMMENT '쇼핑몰 템플릿 ID',
+  `ip_access` text NOT NULL COMMENT '접근 허용 IP 목록',
+  `ip_block` text NOT NULL COMMENT '접근 차단 IP 목록',
+  `recaptcha_site_key` varchar(255) NOT NULL COMMENT '구글 리캡챠 사이트 키',
+  `recaptcha_secret_key` varchar(255) NOT NULL COMMENT '구글 리캡챠 시크릿 키',
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '설정 수정 일시',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='사이트 설정 테이블';
 
-
+-- 컨텐츠 테이블
 DROP TABLE IF EXISTS `cm_content`;
 CREATE TABLE `cm_content` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `co_id` varchar(20) NOT NULL DEFAULT '',
-  `co_subject` varchar(255) NOT NULL DEFAULT '',
-  `co_content` longtext NOT NULL,
-  `co_editor` tinyint(4) NOT NULL COMMENT '에디터선택 0 기본',
-  `co_width` int(11) NOT NULL COMMENT 'width = 1 = full',
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '컨텐츠 고유 번호',
+  `co_id` varchar(20) NOT NULL DEFAULT '' COMMENT '컨텐츠 ID',
+  `co_subject` varchar(255) NOT NULL DEFAULT '' COMMENT '컨텐츠 제목',
+  `co_content` longtext NOT NULL COMMENT '컨텐츠 내용',
+  `co_editor` tinyint(4) NOT NULL COMMENT '에디터 선택 (0: 기본)',
+  `co_width` int(11) NOT NULL COMMENT '컨텐츠 너비 (1: 전체 너비)',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='컨텐츠 관리 테이블';
 
-
+-- 메뉴 테이블
 DROP TABLE IF EXISTS `cm_menu`;
 CREATE TABLE `cm_menu` (
-  `menu_id` int(11) NOT NULL AUTO_INCREMENT,
-  `parent_id` int(11) DEFAULT '0',
-  `menu_name` varchar(100) NOT NULL,
-  `menu_url` varchar(255) DEFAULT '',
-  `target_blank` tinyint(1) DEFAULT '0',
-  `is_disabled` tinyint(1) DEFAULT '0',
-  `menu_level` int(11) NOT NULL COMMENT '메뉴의 중첩 레벨 (1부터 무제한)',
-  `sort_order` int(11) DEFAULT '0' COMMENT '동일 상위 메뉴 내 출력 순서',
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `menu_id` int(11) NOT NULL AUTO_INCREMENT COMMENT '메뉴 고유 번호',
+  `parent_id` int(11) DEFAULT '0' COMMENT '상위 메뉴 ID',
+  `menu_name` varchar(100) NOT NULL COMMENT '메뉴 이름',
+  `menu_url` varchar(255) DEFAULT '' COMMENT '메뉴 URL',
+  `target_blank` tinyint(1) DEFAULT '0' COMMENT '새 창 여부 (1: 새 창, 0: 현재 창)',
+  `is_disabled` tinyint(1) DEFAULT '0' COMMENT '비활성화 여부 (1: 비활성화, 0: 활성화)',
+  `menu_level` int(11) NOT NULL COMMENT '메뉴 중첩 레벨',
+  `sort_order` int(11) DEFAULT '0' COMMENT '정렬 순서',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT '메뉴 생성 일시',
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '메뉴 수정 일시',
   PRIMARY KEY (`menu_id`),
   KEY `idx_parent_id` (`parent_id`),
   KEY `idx_menu_level` (`menu_level`),
   KEY `idx_parent_sort` (`parent_id`,`sort_order`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='사이트 메뉴 관리 테이블';
 
-
+-- 포인트 테이블
 DROP TABLE IF EXISTS `cm_point`;
 CREATE TABLE `cm_point` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_id` varchar(50) NOT NULL COMMENT '회원 아이디',
-  `point` int(11) NOT NULL COMMENT '포인트',
-  `description` varchar(255) NOT NULL COMMENT '포인트 지급/삭제 사유',
-  `created_at` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '등록일',
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '포인트 기록 고유 번호',
+  `user_id` varchar(50) NOT NULL COMMENT '회원 ID',
+  `point` int(11) NOT NULL COMMENT '포인트 값',
+  `description` varchar(255) NOT NULL COMMENT '포인트 지급/차감 사유',
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '포인트 기록 일시',
   PRIMARY KEY (`id`),
   KEY `idx_user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='회원 포인트 관리 테이블';
 
-
+-- 팝업 테이블
 DROP TABLE IF EXISTS `cm_popup`;
 CREATE TABLE `cm_popup` (
-  `po_id` int(11) NOT NULL AUTO_INCREMENT,
-  `po_title` varchar(255) NOT NULL COMMENT '팝업제목',
-  `po_content` text COMMENT '팝업내용',
-  `po_top` int(11) NOT NULL DEFAULT '0' COMMENT '상단위치',
-  `po_left` int(11) NOT NULL DEFAULT '0' COMMENT '좌측위치',
-  `po_width` int(11) NOT NULL DEFAULT '0' COMMENT '가로사이즈',
-  `po_height` int(11) NOT NULL DEFAULT '0' COMMENT '세로사이즈',
-  `po_start_date` date DEFAULT NULL COMMENT '시작일',
-  `po_end_date` date DEFAULT NULL COMMENT '종료일',
-  `po_cookie_time` int(11) NOT NULL DEFAULT '24' COMMENT '쿠키 유지시간(시간)',
-  `po_url` varchar(255) DEFAULT NULL COMMENT '팝업 URL',
-  `po_target` varchar(10) NOT NULL DEFAULT '_blank' COMMENT '타겟(_blank, _self)',
-  `po_use` tinyint(4) NOT NULL DEFAULT '1' COMMENT '사용여부(1:사용, 0:미사용)',
-  `po_reg_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '등록일',
+  `po_id` int(11) NOT NULL AUTO_INCREMENT COMMENT '팝업 고유 번호',
+  `po_title` varchar(255) NOT NULL COMMENT '팝업 제목',
+  `po_content` text COMMENT '팝업 내용',
+  `po_top` int(11) NOT NULL DEFAULT '0' COMMENT '팝업 상단 위치 (픽셀)',
+  `po_left` int(11) NOT NULL DEFAULT '0' COMMENT '팝업 좌측 위치 (픽셀)',
+  `po_width` int(11) NOT NULL DEFAULT '0' COMMENT '팝업 너비 (픽셀)',
+  `po_height` int(11) NOT NULL DEFAULT '0' COMMENT '팝업 높이 (픽셀)',
+  `po_start_date` date DEFAULT NULL COMMENT '팝업 시작일',
+  `po_end_date` date DEFAULT NULL COMMENT '팝업 종료일',
+  `po_cookie_time` int(11) NOT NULL DEFAULT '24' COMMENT '쿠키 유지 시간 (시간)',
+  `po_url` varchar(255) DEFAULT NULL COMMENT '팝업 링크 URL',
+  `po_target` varchar(10) NOT NULL DEFAULT '_blank' COMMENT '링크 타겟 (_blank, _self)',
+  `po_use` tinyint(4) NOT NULL DEFAULT '1' COMMENT '사용 여부 (1: 사용, 0: 미사용)',
+  `po_reg_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '팝업 등록 일시',
   PRIMARY KEY (`po_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='팝업레이어 관리';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='팝업 레이어 관리 테이블';
 
-
+-- 회원 테이블
 DROP TABLE IF EXISTS `cm_users`;
 CREATE TABLE `cm_users` (
-  `user_no` int(11) NOT NULL AUTO_INCREMENT COMMENT '순번',
-  `user_id` varchar(255) NOT NULL COMMENT '회원아이디',
-  `user_name` varchar(255) NOT NULL COMMENT '이름',
-  `user_password` varchar(255) NOT NULL COMMENT '패스워드',
-  `user_email` varchar(255) DEFAULT NULL COMMENT '이메일',
-  `user_hp` varchar(20) DEFAULT NULL COMMENT '휴대폰',
-  `user_lv` int(11) NOT NULL COMMENT '회원레벨',
-  `user_point` int(11) NOT NULL,
-  `user_block` int(11) NOT NULL COMMENT '회원차단1',
-  `user_leave` int(11) NOT NULL COMMENT '회원탈퇴1',
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '가입일',
-  `today_login` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '로그인 시간',
+  `user_no` int(11) NOT NULL AUTO_INCREMENT COMMENT '회원 고유 번호',
+  `user_id` varchar(255) NOT NULL COMMENT '회원 ID',
+  `user_name` varchar(255) NOT NULL COMMENT '회원 이름',
+  `user_password` varchar(255) NOT NULL COMMENT '회원 비밀번호 (해시)',
+  `user_email` varchar(255) DEFAULT NULL COMMENT '회원 이메일',
+  `user_hp` varchar(20) DEFAULT NULL COMMENT '회원 전화번호',
+  `user_lv` int(11) NOT NULL COMMENT '회원 레벨',
+  `user_point` int(11) NOT NULL COMMENT '회원 보유 포인트',
+  `user_block` int(11) NOT NULL COMMENT '차단 여부 (1: 차단, 0: 정상)',
+  `user_leave` int(11) NOT NULL COMMENT '탈퇴 여부 (1: 탈퇴, 0: 정상)',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '회원 가입 일시',
+  `today_login` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '최근 로그인 일시',
   PRIMARY KEY (`user_no`),
   UNIQUE KEY `user_id` (`user_id`),
   UNIQUE KEY `email` (`user_email`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='회원 관리 테이블';
 
-
+-- 방문자 기록 테이블
 DROP TABLE IF EXISTS `cm_visit`;
 CREATE TABLE `cm_visit` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `ip_address` varchar(45) NOT NULL,
-  `visit_time` datetime NOT NULL,
-  `user_agent` text,
-  `referer` text,
-  `visit_count` int(11) DEFAULT '1',
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '방문 기록 고유 번호',
+  `ip_address` varchar(100) NOT NULL COMMENT '방문자 IP 주소',
+  `ip_country` varchar(255) NOT NULL COMMENT 'IP 국가',
+  `ip_countryCode` varchar(100) NOT NULL COMMENT 'IP 국가 코드',
+  `ip_city` varchar(255) NOT NULL COMMENT 'IP 도시',
+  `ip_isp` varchar(255) NOT NULL COMMENT 'IP 인터넷 서비스 제공자',
+  `visit_time` datetime NOT NULL COMMENT '방문 일시',
+  `user_agent` text COMMENT '방문자 사용자 에이전트',
+  `referer` text COMMENT '방문자 유입 경로',
+  `visit_count` int(11) DEFAULT '1' COMMENT '방문 횟수',
   PRIMARY KEY (`id`),
   KEY `idx_ip_referer` (`ip_address`,`referer`(255)),
   KEY `idx_visit_time` (`visit_time`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='방문자 기록 테이블';
