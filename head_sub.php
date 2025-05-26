@@ -70,10 +70,28 @@ if(isset($cm_title) && $cm_title !== ""){
 				}
 			}
 		}
+		
+		$fName = get_First_FolderName($current_url);
 		?>
 		<script src="<?php echo CM_URL?>/js/common.js"></script>
-		<?php if($recaptcha_site && $recaptcha_secret){ //구를 리캡챠?>
+
+		<?php if($recaptcha_site && $recaptcha_secret && is_AllowedFolder()){ //구를 리캡챠?>
+
 		<script src="https://www.google.com/recaptcha/api.js?render=<?php echo $recaptcha_site;?>"></script>
+		<style>
+		.grecaptcha-badge {
+			left: 0 !important;
+			right: auto !important;
+			bottom: 0 !important;
+			top: auto !important;
+			position: fixed !important;
+			z-index: 9999;
+			margin-left: 0; /* 선택: 약간의 여백 */
+			margin-bottom: 0; /* 선택: 하단 여백 */
+		}
+		</style>
+	
 		<?php } ?>
+		
 	</head>
 	<body>

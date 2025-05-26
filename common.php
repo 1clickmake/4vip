@@ -18,6 +18,11 @@ $scheme = isset($_SERVER['REQUEST_SCHEME']) ? $_SERVER['REQUEST_SCHEME'] : (isse
 $host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : $_SERVER['SERVER_NAME'];
 $domain_url = $scheme . '://' . $host;
 
+$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https://" : "http://";
+$host = $_SERVER['HTTP_HOST'];
+$request_uri = $_SERVER['REQUEST_URI'];
+$current_url = $protocol . $host . $request_uri;
+
 define('CM_PATH', $_SERVER['DOCUMENT_ROOT']);
 define('CM_URL', $domain_url);
 

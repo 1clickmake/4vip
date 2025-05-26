@@ -56,6 +56,32 @@ function get_current_filename(): string {
     return !empty($urlPath) ? pathinfo(basename($urlPath), PATHINFO_FILENAME) : '';
 }
 
+/**
+ * 현재 실행 중인 폴더의 이름을 반환합니다.
+ *
+ * @return string 현재 파일명 (확장자 제외), 실패 시 빈 문자열 반환
+ */
+function get_First_FolderName($url) {
+    $parsed_url = parse_url($url);
+    if (!isset($parsed_url['path'])) return '';
+
+    $parts = array_values(array_filter(explode('/', $parsed_url['path'])));
+    return isset($parts[0]) ? $parts[0] : '';
+}
+
+function is_AllowedFolder() {
+    $allowed_folders = ['board', 'adm', 'member'];
+
+    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https://" : "http://";
+    $host = $_SERVER['HTTP_HOST'];
+    $request_uri = $_SERVER['REQUEST_URI'];
+    $current_url = $protocol . $host . $request_uri;
+
+    $first_folder = get_First_FolderName($current_url);
+
+    return in_array($first_folder, $allowed_folders);
+}
+
 // 휴대폰번호의 숫자만 취한 후 중간에 하이픈(-)을 넣는다.
 function get_hyphen_hp_number(string $hp): string
 {
@@ -164,8 +190,8 @@ function get_board(string $board_id){
 }
 
 //회원정보
-function get_member(string $user_id){
-	if (!empty($board_id)) {
+function get_member($user_id){
+	if (!empty($user_id)) {
 		$sql = "SELECT * FROM `cm_users` WHERE `user_id` = :user_id";
 		$params = [
 			':user_id' => $user_id
@@ -1047,4 +1073,45 @@ function get_lang(string $key, string $default = ''): string {
 function get_lang_html(string $key, string $default = ''): string {
     global $lang;
     return $lang->get($key, $default);
+}
+
+// 구조 출력 함수 (불필요한 폴더 제외)
+//echo showTree(CM_PATH);
+//showTree(CM_PATH, '', ['vendor/composer', '.git', 'cache']);
+
+function showTree($dir, $prefix = '', $excludeFolders = []) {
+    // 기본 제외 폴더들
+    $defaultExclude = ['.', '..', '.git', 'node_modules', '.vscode', '.idea', 'cache', 'logs', '.well-known' ];
+    $excludeFolders = array_merge($defaultExclude, $excludeFolders);
+    
+    $files = scandir($dir);
+    $files = array_diff($files, $excludeFolders);
+    
+    // 파일과 폴더 분리 및 정렬
+    $folders = [];
+    $regularFiles = [];
+    
+    foreach ($files as $file) {
+        $path = $dir . '/' . $file;
+        if (is_dir($path)) {
+            $folders[] = $file;
+        } else {
+            $regularFiles[] = $file;
+        }
+    }
+    
+    sort($folders);
+    sort($regularFiles);
+    
+    // 폴더 먼저 출력
+    foreach ($folders as $folder) {
+        $path = $dir . '/' . $folder;
+        echo $prefix . '├── ' . $folder . "<br>";
+        showTree($path, $prefix . '│   ', $excludeFolders);
+    }
+    
+    // 파일 출력
+    foreach ($regularFiles as $file) {
+        echo $prefix . '├── ' . $file . "<br>";
+    }
 }

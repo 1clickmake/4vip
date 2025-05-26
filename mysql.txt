@@ -174,6 +174,7 @@ CREATE TABLE `cm_users` (
   `user_point` int(11) NOT NULL COMMENT '회원 보유 포인트',
   `user_block` int(11) NOT NULL COMMENT '차단 여부 (1: 차단, 0: 정상)',
   `user_leave` int(11) NOT NULL COMMENT '탈퇴 여부 (1: 탈퇴, 0: 정상)',
+  `user_recommend`  varchar(20) DEFAULT NULL COMMENT '회원 추천인',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '회원 가입 일시',
   `today_login` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '최근 로그인 일시',
   PRIMARY KEY (`user_no`),

@@ -1,0 +1,13 @@
+{
+    "name": "4vip/mcp-server",
+    "description": "MCP Server for Cursor AI",
+    "type": "library",
+    "require": {
+        "php": ">=8.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "McpServer\\": "src/"
+        }
+    }
+}

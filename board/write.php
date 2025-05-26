@@ -14,6 +14,7 @@ if($bo['write_lv'] > 0 ){
 $bo_title = "게시글 작성";
 $writeBtn = "등록";
 $formAction = CM_BOARD_URL."/write_update.php";
+
 include_once CM_TEMPLATE_PATH.'/skin/board_skin/'.$bo['board_skin'].'/write.skin.php';
 include_once CM_PATH.'/tail.php';
 ?>
