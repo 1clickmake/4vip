@@ -757,9 +757,13 @@ function sql_board_list(string $table, array $options = []): array {
     $start = ($page - 1) * $per_page;
     
     $searches = $options['search'] ?? [];  // 필드별 조건 배열
-    $order_by = $options['order_by'] ?? 'id';
+    $order_by = $options['order_by'] ?? 'thread_id';
     $order_dir = strtoupper($options['order_dir'] ?? 'DESC');
     $debug = $options['debug'] ?? false;
+
+    // 기본 정렬 조건 설정
+    $default_order = "thread_id DESC, reply_depth ASC, reply_order ASC, board_num ASC";
+    $order_sql = $order_by === 'thread_id' ? $default_order : "$order_by $order_dir";
 
     $where_clauses = [];
     $params = [];
@@ -805,11 +809,15 @@ function sql_board_list(string $table, array $options = []): array {
 
     // 데이터 조회 쿼리
     $sql = "
-        SELECT *,
-            (SELECT COUNT(*) FROM cm_board_file WHERE board_num = {$table}.board_num) as file_count
-        FROM {$table}
+        SELECT b.*,
+            (SELECT COUNT(*) FROM cm_board_file WHERE board_num = b.board_num) as file_count
+        FROM {$table} b
         $where_sql
-        ORDER BY $order_by $order_dir
+        ORDER BY 
+            b.thread_id DESC,
+            b.reply_order ASC,
+            b.reply_depth ASC,
+            b.board_num ASC
         LIMIT :start, :per_page
     ";
 
@@ -817,26 +825,32 @@ function sql_board_list(string $table, array $options = []): array {
         echo "<pre>SQL: $sql\nParams: " . print_r($params, true) . "</pre>";
     }
 
-    $stmt = $pdo->prepare($sql);
-    $stmt->bindValue(':start', $start, PDO::PARAM_INT);
-    $stmt->bindValue(':per_page', $per_page, PDO::PARAM_INT);
+    try {
+        $stmt = $pdo->prepare($sql);
+        $stmt->bindValue(':start', $start, PDO::PARAM_INT);
+        $stmt->bindValue(':per_page', $per_page, PDO::PARAM_INT);
 
-    foreach ($params as $key => $value) {
-        $stmt->bindValue($key, $value);
+        foreach ($params as $key => $value) {
+            $stmt->bindValue($key, $value);
+        }
+
+        $stmt->execute();
+        $rows = $stmt->fetchAll();
+
+        return [
+            'list' => $rows,
+            'current_page' => $page,
+            'per_page' => $per_page,
+            'total_rows' => $total_rows,
+            'total_pages' => $total_pages
+        ];
+    } catch (PDOException $e) {
+        error_log("SQL Error: " . $e->getMessage());
+        error_log("SQL Query: " . $sql);
+        error_log("Parameters: " . print_r($params, true));
+        throw $e;
     }
-
-    $stmt->execute();
-    $rows = $stmt->fetchAll();
-
-    return [
-        'list' => $rows,
-        'current_page' => $page,
-        'per_page' => $per_page,
-        'total_rows' => $total_rows,
-        'total_pages' => $total_pages
-    ];
 }
-
 /**
  * SQL 쿼리를 실행하고 전체 목록을 반환합니다. 간단한 리스트 조회 페이징처리 X
  *

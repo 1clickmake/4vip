@@ -38,37 +38,29 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
 ?>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.56.0/codemirror.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.56.0/theme/eclipse.css">
-<style>
-.CodeMirror {
-    height: 400px;
-    border: 1px solid #dee2e6;
-    border-radius: 0.25rem;
-    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-    font-size: 14px;
-    line-height: 1.5;
-}
-.CodeMirror-gutters {
-    border-right: 1px solid #dee2e6;
-    background-color: #f8f9fa;
-}
-.CodeMirror-linenumber {
-    color: #6c757d;
-}
-</style>
 
 <!-- Main Content -->
 <div class="main-content shifted" id="mainContent">
     <div class="container-fluid">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="page-title mb-0">
-                <i class="fas fa-file-alt me-2"></i>
-                <?php echo $cm_title;?> <?php echo ($mode == 'insert') ? '생성' : '수정'; ?>
-            </h1>
-            <a href="content_list.php" class="btn btn-outline-secondary">
-                <i class="fas fa-list me-2"></i>
-                목록으로
-            </a>
-        </div>
+
+		<!-- 헤더 카드 -->
+            <div class="card shadow-sm mb-4 border-0 card-move">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="card-title mb-1 text-primary">
+                                <i class="fas fa-window-restore me-2"></i><?php echo $cm_title;?>
+                            </h2>
+                            <p class="card-text text-muted mb-0">페이지를 추가 / 관리 / 설정할 수 있습니다.</p>
+                        </div>
+                        <div>
+                            <a href="content_list.php" class="btn btn-primary btn-lg shadow-sm">
+                                <i class="fas fa-list me-2"></i>목록으로
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
         <div class="row">
             <div class="col-12">

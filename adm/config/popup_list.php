@@ -21,7 +21,7 @@ $page = $result['current_page'];
     <div class="main-content shifted" id="mainContent">
         <div class="container-fluid">
             <!-- 헤더 카드 -->
-            <div class="card shadow-sm mb-4 border-0">
+            <div class="card shadow-sm mb-4 border-0 card-move">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
@@ -298,42 +298,7 @@ $page = $result['current_page'];
 </script>
 
 <style>
-    .card {
-        transition: all 0.3s ease;
-    }
-    
-    .card:hover {
-        transform: translateY(-2px);
-    }
-    
-    .table-hover tbody tr:hover {
-        background-color: rgba(0, 123, 255, 0.05);
-    }
-    
-    .btn-group .btn {
-        transition: all 0.2s ease;
-    }
-    
-    .btn-group .btn:hover {
-        transform: scale(1.1);
-    }
-    
-    .badge {
-        font-size: 0.75em;
-        padding: 0.5em 0.75em;
-    }
-    
-    .modal-content {
-        border-radius: 15px;
-    }
-    
-    .card-header {
-        border-radius: 15px 15px 0 0 !important;
-    }
-    
-    .shadow-sm {
-        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
-    }
+
 </style>
    
 <?php

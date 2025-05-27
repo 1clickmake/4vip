@@ -121,7 +121,19 @@ if (!empty($start_date) || !empty($end_date) || !empty($ip_address)) {
     <!-- Main Content -->
     <div class="main-content shifted" id="mainContent">
         <div class="container-fluid">
-			<h2 class="admin-list-title"><?php echo $cm_title;?></h2> 
+			<!-- 헤더 카드 -->
+            <div class="card shadow-sm mb-4 border-0 card-move">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="card-title mb-1 text-primary">
+                                <i class="bi bi-graph-up-arrow me-2"></i><?php echo $cm_title;?>
+                            </h2>
+                            <p class="card-text text-muted mb-0">홈페이지 방문자 목록 입니다.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
 			
 			<!-- 방문자 통계 -->
 			<div class="card mb-4">

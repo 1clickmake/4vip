@@ -32,10 +32,19 @@ $cm_title = $is_new ? '회원 신규 등록' : '회원 정보 수정';
 <!-- Main Content -->
 <div class="main-content shifted" id="mainContent">
     <div class="container-fluid">
-        <h1 class="page-title mb-5 fs-4">
-            <i class="fas fa-user-edit me-3"></i>
-            <?php echo $cm_title; ?>
-        </h1>
+        <!-- 헤더 카드 -->
+            <div class="card shadow-sm mb-4 border-0 card-move">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="card-title mb-1 text-primary">
+                                <i class="bi bi-person-check-fill me-2"></i><?php echo $cm_title;?>
+                            </h2>
+                            <p class="card-text text-muted mb-0">회원 상세정보</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         
         <div class="row justify-content-center">
             <div class="col">

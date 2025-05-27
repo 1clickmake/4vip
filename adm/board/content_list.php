@@ -48,9 +48,24 @@ $page = $result['current_page'];
     <!-- Main Content -->
     <div class="main-content shifted" id="mainContent">
         <div class="container-fluid">
-			<div class="d-flex justify-content-between align-items-center mb-4">
-				<h2 class="admin-list-title"><?php echo $cm_title;?></h2>
-			</div>
+			<!-- 헤더 카드 -->
+            <div class="card shadow-sm mb-4 border-0 card-move">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="card-title mb-1 text-primary">
+                                <i class="fas fa-window-restore me-2"></i><?php echo $cm_title;?>
+                            </h2>
+                            <p class="card-text text-muted mb-0">페이지를 추가 / 관리 / 설정할 수 있습니다.</p>
+                        </div>
+                        <div>
+                            <a href="content_form.php" class="btn btn-primary btn-lg shadow-sm">
+                                <i class="fas fa-plus me-2"></i>내용추가
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
 			
 			<!-- 검색 폼 -->
 			<div class="card mb-4">
@@ -71,7 +86,6 @@ $page = $result['current_page'];
 						<div class="col-md-3 d-flex align-items-end">
 							<button type="submit" class="btn btn-primary me-2">검색</button>
 							<a href="content_list.php" class="btn btn-secondary me-2">초기화</a>
-							<a href="content_form.php" class="btn btn-danger">내용추가</a>
 						</div>
 					</form>
 				</div>

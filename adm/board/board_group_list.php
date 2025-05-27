@@ -40,12 +40,26 @@ $page = $result['current_page'];
     <!-- Main Content -->
     <div class="main-content shifted" id="mainContent">
         <div class="container-fluid">
-			<div class="d-flex justify-content-between align-items-center mb-4">
-				<h2 class="admin-list-title"><?php echo $cm_title;?></h2>
-				<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createBoardModal">
-					새 게시판그룹 만들기
-				</button>
-			</div>
+			
+			
+			<!-- 헤더 카드 -->
+            <div class="card shadow-sm mb-4 border-0 card-move">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="card-title mb-1 text-primary">
+                                <i class="fas fa-window-restore me-2"></i><?php echo $cm_title;?>
+                            </h2>
+                            <p class="card-text text-muted mb-0">게시판 그룹 목록 입니다.</p>
+                        </div>
+                        <div>
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createBoardModal">
+								새 게시판그룹 만들기
+							</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
 			<div class="table-responsive">
 				<table class="table table-sm table-striped table-bordered align-middle" style="min-width:1200px;">

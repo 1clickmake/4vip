@@ -8,7 +8,7 @@ include_once CM_ADMIN_PATH.'/admin.head.php';
     <div class="main-content shifted" id="mainContent">
         <div class="container-fluid">
             <!-- 헤더 카드 -->
-            <div class="card shadow-sm mb-4 border-0">
+            <div class="card shadow-sm mb-4 border-0 card-move">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>

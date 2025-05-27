@@ -3,57 +3,22 @@ include_once './_common.php';
 $cm_title = "메뉴관리";
 include_once CM_ADMIN_PATH.'/admin.head.php';
 ?>
-
-<style>
-.menu-scroll{min-height:1000px; max-height:1000px; overflow-y:auto;}
-.nested-menu { margin-left: 0; }
-.sortable {padding-left: 1.0rem;}
-.sortable .btn {font-size:12px !important; padding:4px 8px;}
-.menu-item { 
-    border-bottom: 1px solid #e9ecef; 
-    padding: 10px 10px; 
-    font-size:14px; 
-    cursor: move; 
-    transition: all 0.3s ease;
-    border-radius: 8px;
-    margin-bottom: 5px;
-    background: #fff;
-}
-.nested-menu-deep { margin-left: 0; }
-.menu-item:hover { 
-    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-.sortable-ghost { 
-    opacity: 0.4; 
-    background: linear-gradient(135deg, #e9ecef, #dee2e6);
-    transform: rotate(3deg);
-}
-.menu-level-indicator {
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    margin-right: 8px;
-}
-.level-0 { background: #007bff; }
-.level-1 { background: #28a745; }
-.level-2 { background: #ffc107; }
-.level-3 { background: #dc3545; }
-.menu-status-badge {
-    font-size: 10px;
-    padding: 2px 6px;
-    border-radius: 12px;
-}
-</style>
-
-    <!-- Main Content -->
+<!-- Main Content -->
     <div class="main-content shifted" id="mainContent">
         <div class="container-fluid">
-            <h1 class="page-title mb-5 fs-4">
-                <i class="fas fa-sitemap me-3"></i>
-                <?php echo $cm_title;?>
-            </h1>
+            <!-- 헤더 카드 -->
+            <div class="card shadow-sm mb-4 border-0 card-move">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="card-title mb-1 text-primary">
+                                <i class="bi bi-menu-up me-2"></i><?php echo $cm_title;?>
+                            </h2>
+                            <p class="card-text text-muted mb-0">홈페이지 메뉴를 관리합니다.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
             
             <div class="row">
                 <!-- 메뉴 추가 폼 -->

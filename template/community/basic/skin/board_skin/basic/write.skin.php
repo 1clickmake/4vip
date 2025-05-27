@@ -1,5 +1,5 @@
 <?php
-if (!defined('_CMBOARD_')) exit; // 개별 페이지 접근 불가 
+if (!defined('_CMBOARD_')) exit; // 개별 페이지 접근 불가  
 
 // Font Awesome 추가
 echo '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">';

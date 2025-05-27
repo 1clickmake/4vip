@@ -58,6 +58,10 @@ $has_search = !empty($_GET['search_keyword']);
                             $reply_depth = $list['reply_depth'] ?? 0;
                             $reply_indent = str_repeat('&nbsp;&nbsp;&nbsp;&nbsp;', $reply_depth);
                             $reply_icon = str_repeat('<i class="bi bi-arrow-return-right"></i>', $reply_depth);
+                            
+                            // 같은 thread_id의 게시글인지 확인
+                            $same_thread = isset($prev_thread_id) && $prev_thread_id === $list['thread_id'];
+                            $prev_thread_id = $list['thread_id'];
                         ?>
                         <tr>
                             <td class="text-center"><?php echo $list_no;?></td>
@@ -91,3 +95,4 @@ $has_search = !empty($_GET['search_keyword']);
         <?php echo render_pagination($page, $total_pages, $_GET);?>
         <!-- 페이지네이션 끝-->
     </div>
+    

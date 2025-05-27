@@ -256,3 +256,70 @@ body {
         font-size: 2.5rem;
     }
 }
+
+.card-move {
+    transition: all 0.3s ease;
+}
+    
+.card-move:hover {
+	transform: translateY(-2px);
+}
+
+/*관리자 메뉴관리*/
+.menu-scroll{min-height:1000px; max-height:1000px; overflow-y:auto;}
+.nested-menu { margin-left: 0; }
+.sortable {padding-left: 1.0rem;}
+.sortable .btn {font-size:12px !important; padding:4px 8px;}
+.menu-item { 
+    border-bottom: 1px solid #e9ecef; 
+    padding: 10px 10px; 
+    font-size:14px; 
+    cursor: move; 
+    transition: all 0.3s ease;
+    border-radius: 8px;
+    margin-bottom: 5px;
+    background: #fff;
+}
+.nested-menu-deep { margin-left: 0; }
+.menu-item:hover { 
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.sortable-ghost { 
+    opacity: 0.4; 
+    background: linear-gradient(135deg, #e9ecef, #dee2e6);
+    transform: rotate(3deg);
+}
+.menu-level-indicator {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+.level-0 { background: #007bff; }
+.level-1 { background: #28a745; }
+.level-2 { background: #ffc107; }
+.level-3 { background: #dc3545; }
+.menu-status-badge {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 12px;
+}
+
+/*관리자 내용관리 폼*/
+.CodeMirror {
+    height: 400px;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.5;
+}
+.CodeMirror-gutters {
+    border-right: 1px solid #dee2e6;
+    background-color: #f8f9fa;
+}
+.CodeMirror-linenumber {
+    color: #6c757d;
+}

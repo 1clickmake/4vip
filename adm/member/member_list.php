@@ -51,10 +51,24 @@ $page = $result['current_page'];
     <!-- Main Content -->
     <div class="main-content shifted" id="mainContent">
         <div class="container-fluid">
-			<div class="d-flex justify-content-between align-items-center mb-4">
-				<h2 class="admin-list-title"><?php echo $cm_title;?></h2>
-				<a href="member_form.php" class="btn btn-primary">회원신규등록</a>
-			</div>
+			<!-- 헤더 카드 -->
+            <div class="card shadow-sm mb-4 border-0 card-move">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="card-title mb-1 text-primary">
+                                <i class="bi bi-people-fill me-2"></i><?php echo $cm_title;?>
+                            </h2>
+                            <p class="card-text text-muted mb-0">회원 목록 입니다.</p>
+                        </div>
+                        <div>
+                            <a href="member_form.php" class="btn btn-primary btn-lg shadow-sm">
+                                <i class="fas fa-plus me-2"></i>신규회원등록
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
 			
 			<!-- 검색 폼 -->
 			<div class="card mb-4">

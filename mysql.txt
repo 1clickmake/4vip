@@ -6,6 +6,7 @@ CREATE TABLE `cm_board` (
   `parent_num` int(11) DEFAULT NULL,
   `reply_depth` int(11) NOT NULL,
   `reply_order` int(11) NOT NULL,
+  `thread_id` int(11) NOT NULL,
   `user_id` varchar(255) NOT NULL,
   `email` varchar(100) NOT NULL,
   `name` varchar(50) NOT NULL,
@@ -81,6 +82,33 @@ CREATE TABLE `cm_board_list` (
 
 
 SET NAMES utf8mb4;
+
+DROP TABLE IF EXISTS `cm_board_xxxx1`;
+CREATE TABLE `cm_board_xxxx1` (
+  `board_num` int(11) NOT NULL AUTO_INCREMENT,
+  `group_id` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `board_id` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `user_id` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `email` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `password` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `content` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ip` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `reg_date` datetime NOT NULL,
+  `parent_num` int(11) DEFAULT NULL,
+  `reply_depth` int(11) NOT NULL DEFAULT '0',
+  `reply_order` int(11) NOT NULL DEFAULT '0',
+  `thread_id` int(11) NOT NULL,
+  `view_count` int(11) NOT NULL DEFAULT '0',
+  `like_count` int(11) NOT NULL DEFAULT '0',
+  `dislike_count` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`board_num`),
+  KEY `thread_id` (`thread_id`),
+  KEY `parent_num` (`parent_num`),
+  KEY `user_id` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 
 DROP TABLE IF EXISTS `cm_config`;
 CREATE TABLE `cm_config` (

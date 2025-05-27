@@ -41,8 +41,8 @@ if (!empty($_GET['search_keyword'])) {
 
 $result = sql_board_list('cm_board', [
     'page' => $_GET['page'] ?? 1,
-    'per_page' => 10,
-    'order_by' => 'COALESCE(parent_num, board_num), reply_order',
+    'per_page' => 30,
+    'order_by' => 'thread_id',
     'order_dir' => 'DESC',
     'debug' => false,
     'search' => $search_conditions

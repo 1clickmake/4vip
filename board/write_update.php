@@ -83,27 +83,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $parent_num = filter_input(INPUT_POST, 'parent_num', FILTER_VALIDATE_INT);
         $reply_depth = 0;
         $reply_order = 0;
+        $thread_id = 0;
 
         if ($parent_num) {
             // 부모 게시글 정보 조회
-            $parent_sql = "SELECT reply_depth, reply_order FROM cm_board WHERE board_num = :parent_num";
+            $parent_sql = "SELECT reply_depth, reply_order, thread_id, board_num FROM cm_board WHERE board_num = :parent_num";
             $parent_stmt = $pdo->prepare($parent_sql);
             $parent_stmt->execute([':parent_num' => $parent_num]);
             $parent = $parent_stmt->fetch();
 
             if ($parent) {
+                error_log("Reply post: parent_num = {$parent_num}, parent_reply_depth = {$parent['reply_depth']}, parent_reply_order = {$parent['reply_order']}, parent_thread_id = {$parent['thread_id']}");
+
                 $reply_depth = $parent['reply_depth'] + 1;
-                
-                // 같은 부모를 가진 답변글들의 최대 reply_order 조회
-                $max_order_sql = "SELECT MAX(reply_order) as max_order FROM cm_board WHERE parent_num = :parent_num";
-                $max_order_stmt = $pdo->prepare($max_order_sql);
-                $max_order_stmt->execute([':parent_num' => $parent_num]);
-                $max_order = $max_order_stmt->fetch();
-                
-                $reply_order = ($max_order['max_order'] ?? 0) + 1;
+                // 부모 게시글의 thread_id가 0이면 부모의 board_num을 사용, 아니면 부모의 thread_id 사용
+                $thread_id = ($parent['thread_id'] == 0) ? $parent['board_num'] : $parent['thread_id'];
+
+                // 새로운 답글이 삽입될 위치의 reply_order 계산: 부모 게시글의 reply_order 바로 다음
+                $new_reply_order = $parent['reply_order'] + 1;
+
+                // 해당 thread_id 내에서, 새로운 답글의 위치(new_reply_order)보다 크거나 같은 모든 글들의 reply_order를 1 증가시킴
+                $order_update_sql = "UPDATE cm_board SET reply_order = reply_order + 1 WHERE thread_id = :thread_id AND reply_order >= :new_order_threshold";
+                $order_update_stmt = $pdo->prepare($order_update_sql);
+                $order_update_stmt->execute([':thread_id' => $thread_id, ':new_order_threshold' => $new_reply_order]);
+
+                // 새로운 답글에 할당될 reply_order
+                $reply_order = $new_reply_order;
+
+                error_log("Reply post: thread_id = {$thread_id}, Calculated new reply_order = {$reply_order}, Update SQL executed.");
+
+            } else {
+                 // 부모 게시글이 없는 경우 (오류 상황), 새로운 게시글처럼 처리하거나 오류 처리
+                 // 여기서는 새로운 게시글처럼 처리 (혹시 모를 경우)
+                 $parent_num = null; // 부모 없음으로 설정
+                 $reply_depth = 0;
+                 $reply_order = 0;
+                 // thread_id는 아래에서 설정
             }
         }
         
+        // 새로운 게시글이거나 부모가 없던 경우 thread_id 설정
+        if (!$parent_num) {
+             // 게시글 등록 후 board_num을 thread_id로 사용해야 하므로, 초기값 0으로 두고 insert 후에 업데이트
+             $thread_id = 0; 
+        }
+
         $boardData = [
             'group_id' => $bo['group_id'],
             'board_id' => $board_id,
@@ -116,7 +140,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'reg_date' => date('Y-m-d H:i:s'),
             'parent_num' => $parent_num ?: null,  // parent_num이 0이면 null로 설정
             'reply_depth' => $reply_depth,
-            'reply_order' => $reply_order
+            'reply_order' => $reply_order,
+            'thread_id' => $thread_id
         ];
         
         // 비회원인 경우에만 비밀번호 저장
@@ -127,6 +152,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $board_num = process_data_insert('cm_board', $boardData);
         if ($board_num === false) {
             throw new Exception("게시글 등록 실패");
+        }
+
+        // 새로운 게시글인 경우 board_num을 thread_id로 업데이트
+        if (!$parent_num || $thread_id === 0) {
+             $update_thread_sql = "UPDATE cm_board SET thread_id = :board_num WHERE board_num = :board_num";
+             $update_thread_stmt = $pdo->prepare($update_thread_sql);
+             $update_thread_stmt->execute([':board_num' => $board_num]);
         }
 
         // 2. 파일 업로드 처리
