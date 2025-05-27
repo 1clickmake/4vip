@@ -122,6 +122,20 @@ include_once CM_ADMIN_PATH.'/admin.head.php';
                                                placeholder="https://example.com">
                                     </div>
                                 </div>
+								
+								<div class="mb-4">
+                                    <label for="menu_name" class="form-label fw-semibold">
+                                        <i class="fas fa-tag me-2 text-success"></i>
+                                        메뉴 아이콘
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light">
+                                            <i class="fas fa-font"></i>
+                                        </span>
+                                        <input type="text" class="form-control" id="menu_icon" name="menu_icon" 
+                                               placeholder="아이콘 태그를 입력하세요" required>
+                                    </div>
+                                </div>
                                 
                                 <div class="mb-4">
                                     <h6 class="text-muted fw-bold mb-3">
@@ -183,6 +197,9 @@ include_once CM_ADMIN_PATH.'/admin.head.php';
                                             echo '<div class="d-flex align-items-center">';
                                             echo '<i class="fas fa-grip-vertical text-muted me-2"></i>';
                                             echo '<span class="menu-level-indicator ' . $levelClass . '"></span>';
+											if ($menu['menu_icon']) {
+                                                echo $menu['menu_icon'];
+                                            }
                                             echo '<span class="fw-medium">' . htmlspecialchars($menu['menu_name']) . '</span>';
                                             
                                             // 상태 배지들
@@ -271,6 +288,18 @@ include_once CM_ADMIN_PATH.'/admin.head.php';
                                     <input type="text" class="form-control" id="edit_menu_url" name="menu_url">
                                 </div>
                             </div>
+							<div class="mb-4">
+                                <label for="edit_menu_url" class="form-label fw-semibold">
+                                    <i class="fas fa-link me-2 text-info"></i>
+                                    메뉴 아이콘
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light">
+                                        <i class="fas fa-external-link-alt"></i>
+                                    </span>
+                                    <input type="text" class="form-control" id="edit_menu_icon" name="menu_icon">
+                                </div>
+                            </div>
                             <div class="mb-4">
                                 <h6 class="text-muted fw-bold mb-3">
                                     <i class="fas fa-cog me-2"></i>
@@ -341,6 +370,7 @@ include_once CM_ADMIN_PATH.'/admin.head.php';
                                 $('#edit_parent_id').val(data.parent_id);
                                 $('#edit_menu_name').val(data.menu_name);
                                 $('#edit_menu_url').val(data.menu_url);
+								$('#edit_menu_icon').val(data.menu_icon);
                                 $('#edit_target_blank').prop('checked', data.target_blank == 1);
                                 $('#edit_is_disabled').prop('checked', data.is_disabled == 1);
                                 $('#editModal').modal('show');

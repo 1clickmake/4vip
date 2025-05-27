@@ -14,6 +14,7 @@ try {
         // XSS 방지를 위해 입력값 처리
         $menu_name = isset($_POST['menu_name']) ? strip_tags(trim($_POST['menu_name'])) : '';
         $menu_url = isset($_POST['menu_url']) ? filter_var(trim($_POST['menu_url']), FILTER_SANITIZE_URL) : '';
+		$menu_icon = $_POST['menu_icon'] ?? '';
         $target_blank = isset($_POST['target_blank']) && $_POST['target_blank'] == '1' ? 1 : 0;
         $is_disabled = isset($_POST['is_disabled']) && $_POST['is_disabled'] == '1' ? 1 : 0;
 
@@ -40,8 +41,8 @@ try {
         $stmt->execute([$parent_id]);
         $sort_order = ($stmt->fetch()['max_sort'] ?? 0) + 1;
         
-        $stmt = $pdo->prepare("INSERT INTO cm_menu (parent_id, menu_name, menu_url, target_blank, is_disabled, menu_level, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$parent_id, $menu_name, $menu_url, $target_blank, $is_disabled, $menu_level, $sort_order]);
+        $stmt = $pdo->prepare("INSERT INTO cm_menu (parent_id, menu_name, menu_url, menu_icon, target_blank, is_disabled, menu_level, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$parent_id, $menu_name, $menu_url, $menu_icon, $target_blank, $is_disabled, $menu_level, $sort_order]);
         
         echo json_encode(['status' => 'success']);
     }
@@ -62,6 +63,7 @@ try {
         // XSS 방지를 위해 입력값 처리
         $menu_name = isset($_POST['menu_name']) ? strip_tags(trim($_POST['menu_name'])) : '';
         $menu_url = isset($_POST['menu_url']) ? filter_var(trim($_POST['menu_url']), FILTER_SANITIZE_URL) : '';
+		$menu_icon = $_POST['menu_icon'] ?? '';
         $target_blank = isset($_POST['target_blank']) && $_POST['target_blank'] == '1' ? 1 : 0;
         $is_disabled = isset($_POST['is_disabled']) && $_POST['is_disabled'] == '1' ? 1 : 0;
 
@@ -83,8 +85,8 @@ try {
             }
         }
         
-        $stmt = $pdo->prepare("UPDATE cm_menu SET parent_id = ?, menu_name = ?, menu_url = ?, target_blank = ?, is_disabled = ?, menu_level = ? WHERE menu_id = ?");
-        $stmt->execute([$parent_id, $menu_name, $menu_url, $target_blank, $is_disabled, $menu_level, $menu_id]);
+        $stmt = $pdo->prepare("UPDATE cm_menu SET parent_id = ?, menu_name = ?, menu_url = ?, menu_icon = ?, target_blank = ?, is_disabled = ?, menu_level = ? WHERE menu_id = ?");
+        $stmt->execute([$parent_id, $menu_name, $menu_url, $menu_icon, $target_blank, $is_disabled, $menu_level, $menu_id]);
         
         if ($stmt->rowCount() > 0) {
             echo json_encode(['status' => 'success']);

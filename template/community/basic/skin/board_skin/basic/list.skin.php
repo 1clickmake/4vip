@@ -53,10 +53,18 @@ $has_search = !empty($_GET['search_keyword']);
                     <?php else: ?>
                         <?php foreach ($rows as $index => $list): 
                             $list_no = $start_number - $index;
+                            // 답변글 여부 확인
+                            $is_reply = !empty($list['parent_num']);
+                            $reply_depth = $list['reply_depth'] ?? 0;
+                            $reply_indent = str_repeat('&nbsp;&nbsp;&nbsp;&nbsp;', $reply_depth);
+                            $reply_icon = str_repeat('<i class="bi bi-arrow-return-right"></i>', $reply_depth);
                         ?>
                         <tr>
                             <td class="text-center"><?php echo $list_no;?></td>
                             <td>
+                                <?php if ($is_reply): ?>
+                                <span class="text-muted"><?php echo $reply_indent; ?><?php echo $reply_icon; ?></span>
+                                <?php endif; ?>
                                 <a href="<?php echo get_board_url('view', $boardId, $list['board_num']);?>" class="text-decoration-none">
                                     <?= htmlspecialchars($list['title']) ?>
                                     <?php if ($list['file_count'] > 0): ?>

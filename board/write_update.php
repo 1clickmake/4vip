@@ -79,16 +79,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // 1. 게시글 데이터 insert
         $bo = get_board($board_id);
         
+        // 답변글 처리
+        $parent_num = filter_input(INPUT_POST, 'parent_num', FILTER_VALIDATE_INT);
+        $reply_depth = 0;
+        $reply_order = 0;
+
+        if ($parent_num) {
+            // 부모 게시글 정보 조회
+            $parent_sql = "SELECT reply_depth, reply_order FROM cm_board WHERE board_num = :parent_num";
+            $parent_stmt = $pdo->prepare($parent_sql);
+            $parent_stmt->execute([':parent_num' => $parent_num]);
+            $parent = $parent_stmt->fetch();
+
+            if ($parent) {
+                $reply_depth = $parent['reply_depth'] + 1;
+                
+                // 같은 부모를 가진 답변글들의 최대 reply_order 조회
+                $max_order_sql = "SELECT MAX(reply_order) as max_order FROM cm_board WHERE parent_num = :parent_num";
+                $max_order_stmt = $pdo->prepare($max_order_sql);
+                $max_order_stmt->execute([':parent_num' => $parent_num]);
+                $max_order = $max_order_stmt->fetch();
+                
+                $reply_order = ($max_order['max_order'] ?? 0) + 1;
+            }
+        }
+        
         $boardData = [
             'group_id' => $bo['group_id'],
             'board_id' => $board_id,
-			'user_id' => $user_id,
+            'user_id' => $user_id,
             'email' => $email,
             'name' => $name,
-            'title' => $title,
+            'title' => $parent_num ? 'RE: ' . $title : $title,
             'content' => $content,
             'ip' => $ip,
-            'reg_date' => date('Y-m-d H:i:s')
+            'reg_date' => date('Y-m-d H:i:s'),
+            'parent_num' => $parent_num ?: null,  // parent_num이 0이면 null로 설정
+            'reply_depth' => $reply_depth,
+            'reply_order' => $reply_order
         ];
         
         // 비회원인 경우에만 비밀번호 저장

@@ -1,5 +1,5 @@
 <?php
-if (!defined('_CMBOARD_')) exit; // 개별 페이지 접근 불가
+if (!defined('_CMBOARD_')) exit; // 개별 페이지 접근 불가 
 
 // Font Awesome 추가
 echo '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">';
@@ -11,6 +11,7 @@ echo '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-a
     <form action="<?php echo $formAction;?>" method="post" enctype="multipart/form-data" id="writeForm">
         <input type="hidden" name="board_id" value="<?php echo $boardId;?>">
         <input type="hidden" name="board_num" value="<?php echo $boardNum ?? '';?>">
+		<input type="hidden" name="parent_num" value="<?php echo $_GET['parent'] ?? '';?>">
         <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response">
         <input type="hidden" name="user_id" value="<?php echo htmlspecialchars($member['user_id'] ?? ''); ?>">
         <?php if ($is_member): // 회원인 경우 이메일, 이름, 비밀번호를 hidden으로 처리 ?>

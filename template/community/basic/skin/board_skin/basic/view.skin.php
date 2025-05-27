@@ -221,6 +221,7 @@ if ($comments === false) {
             }
             ?>
             <a href="<?php echo get_board_url('write',$boardId);?>" class="btn btn-dark">글쓰기</a>
+            <a href="<?php echo get_board_url('write',$boardId, $boardNum);?>&parent=<?php echo $boardNum;?>" class="btn btn-info">답변글</a>
         </div>
     </div>
 </div>

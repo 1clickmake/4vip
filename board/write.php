@@ -6,7 +6,7 @@ include_once CM_PATH.'/head.php';
 if($bo['write_lv'] > 0 ){
 	if(!$is_admin ){
 		if($is_guest || $member['user_lv'] < $bo['write_lv']){
-			alert('글쓰기 권한이 없습니다.');
+			alert('글쓰기 권한이 없습니다.'); 
 		}
 	}
 }
