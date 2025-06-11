@@ -14,7 +14,7 @@ if (!defined('_CMBOARD_')) exit; // 개별 페이지 접근 불가
  * @param array $reply_to 답장 주소 [['email' => '이메일주소', 'name' => '이름']]
  * @return array ['success' => true/false, 'message' => '결과 메시지']
  */
-function send_gmail($to_name = '', $to_email, $subject, $body,  $alt_body = '', $attachments = [], $cc_list = [], $bcc_list = [], $reply_to = []) {
+function send_gmail($to_name, $to_email, $subject, $body,  $alt_body = '', $attachments = [], $cc_list = [], $bcc_list = [], $reply_to = []) {
     // PHPMailer 클래스 파일 포함 - 상대 경로 사용
     require_once CM_PLUGIN_PATH.'/PHPMailer/src/Exception.php';
     require_once CM_PLUGIN_PATH.'/PHPMailer/src/PHPMailer.php';

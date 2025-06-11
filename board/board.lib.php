@@ -11,6 +11,9 @@ if(empty($boardId)){
 }
 
 $bo = get_board($boardId); //게시판 정보
+if(empty($bo)){
+	alert('잘못된 접근입니다.');
+}
 
 //현재 url 파일 순수 파일명 write.php --> write 출력
 $currentFilename = get_current_filename();

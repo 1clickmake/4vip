@@ -1,0 +1,16 @@
+//게시판 리스트 관련 js
+function toggleAllCheckBoxes(source) {
+    const checkboxes = document.getElementsByName('selected_posts[]');
+    for(let i=0; i < checkboxes.length; i++) {
+        checkboxes[i].checked = source.checked;
+    }
+}
+
+function confirmDeleteSelected() {
+    const checkedCount = document.querySelectorAll('input[name="selected_posts[]"]:checked').length;
+    if (checkedCount === 0) {
+        alert('삭제할 게시물을 선택해주세요.');
+        return false;
+    }
+    return confirm(checkedCount + '개의 게시물을 정말 삭제하시겠습니까?\n삭제된 데이터는 복구할 수 없습니다.');
+}

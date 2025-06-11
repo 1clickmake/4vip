@@ -1,9 +1,8 @@
 <?php
 if (!defined('_CMBOARD_')) exit; // 개별 페이지 접근 불가
 include_once './_common.php';
-include_once CM_ADMIN_PATH.'/admin.lib.php';
-
 include_once CM_PATH.'/head_sub.php';
+include_once CM_ADMIN_PATH.'/admin.lib.php';
 ?>
 
 <!-- Top Navbar -->

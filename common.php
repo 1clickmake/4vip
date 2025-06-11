@@ -7,19 +7,47 @@ function clean_xss_tags($str) {
     return $str;
 }
 
-require_once $_SERVER['DOCUMENT_ROOT'] .'/data/config.php';
-session_start();
+if (file_exists($_SERVER['DOCUMENT_ROOT'] .'/data/config.php')) {
+	require_once $_SERVER['DOCUMENT_ROOT'] .'/data/config.php';
+}else{
+	
+		// 데이터베이스 설정 파일이 없으면 설치 페이지로 리다이렉트
+	if (!file_exists($_SERVER['DOCUMENT_ROOT'] .'/data/config.php')) {
+		header('Location: install/index.php');
+		exit;
+	}
+
+	// 설정 파일이 있더라도 데이터베이스 연결이 안되면 설치 페이지로 리다이렉트
+	try {
+		define('_CM_', true);
+		require_once $_SERVER['DOCUMENT_ROOT'] .'/data/config.php';
+
+		$db = CM_DB::getInstance();
+	} catch (Exception $e) {
+		header('Location: install/index.php');
+		exit;
+	}
+}
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 
 $scheme = isset($_SERVER['REQUEST_SCHEME']) ? $_SERVER['REQUEST_SCHEME'] : (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http');
 $host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : $_SERVER['SERVER_NAME'];
 $domain_url = $scheme . '://' . $host;
+
+$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https://" : "http://";
+$host = $_SERVER['HTTP_HOST'];
+$request_uri = $_SERVER['REQUEST_URI'];
+$current_url = $protocol . $host . $request_uri;
 
 define('CM_PATH', $_SERVER['DOCUMENT_ROOT']);
 define('CM_URL', $domain_url);
 
 require_once(CM_PATH.'/config.php');//상수 선언
 require_once(CM_LIB_PATH.'/common.lib.php'); // 공통 라이브러리
-
 
 //관리자 환경설정
 $sql = "SELECT * FROM `cm_config` WHERE `id` = :id";
@@ -90,9 +118,9 @@ if ($is_admin != 'super') {
     $pattern = explode("\n", trim($config['ip_block']));
     for ($i=0; $i<count($pattern); $i++) {
         $pattern[$i] = trim($pattern[$i]);
-        if (empty($pattern[$i]))
+        if (empty($pattern[$i])){
             continue;
-
+		}
         $pattern[$i] = str_replace(".", "\.", $pattern[$i]);
         $pattern[$i] = str_replace("+", "[0-9\.]+", $pattern[$i]);
         $pat = "/^{$pattern[$i]}$/";
@@ -106,11 +134,14 @@ if ($is_admin != 'super') {
 	get_visit();
 }
 
+
 //템플릿 관련 상수
 define('CM_TEMPLATE_PATH', CM_PATH.'/template/community/'.$config['template_id']);
 define('CM_TEMPLATE_URL', CM_URL.'/template/community/'.$config['template_id']);
+define('CM_NAV_SKIN_PATH', CM_PATH.'/skin/nav/nav1');
+define('CM_NAV_SKIN_URL', CM_URL.'/skin/nav/nav1');
+define('CM_SLIDE_SKIN_PATH', CM_PATH.'/skin/slider/slider1/slider.php');
 
 //쇼핑몰 템플릿 상수
 define('CM_SHOP_TEMPLATE_PATH', CM_PATH.'/template/shop/'.$config['shop_template_id']);
 define('CM_SHOP_TEMPLATE_URL', CM_URL.'/template/shop/'.$config['shop_template_id']);
-?>

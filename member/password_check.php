@@ -42,4 +42,3 @@ $response['status'] = 'success';
 $response['message'] = '비밀번호가 확인되었습니다.';
 
 echo json_encode($response);
-?> 

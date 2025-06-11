@@ -13,7 +13,11 @@ if (!defined('_CMBOARD_')) exit; // 개별 페이지 접근 불가
 
             <!-- Home -->
             <li class="nav-item">
-                <a class="nav-link active" href="<?php echo CM_URL ?>"><i class="bi bi-house"></i> Home</a>
+                <a class="nav-link active" href="<?php echo CM_ADMIN_URL ?>"><i class="bi bi-speedometer"></i> Home</a>
+            </li>
+			
+			<li class="nav-item">
+                <a class="nav-link" href="<?php echo CM_ADMIN_URL ?>/config/contact_list.php"><i class="bi bi-chat-dots"></i> 문의관리</a>
             </li>
 
             <!-- 홈페이지 설정 -->
@@ -33,7 +37,7 @@ if (!defined('_CMBOARD_')) exit; // 개별 페이지 접근 불가
                             <a class="nav-link" href="<?php echo CM_ADMIN_URL ?>/config/config_form.php"><i class="bi bi-dot"></i> 환경설정</a>
                         </li>
 						<li class="nav-item">
-                            <a class="nav-link" href="<?php echo CM_ADMIN_URL ?>/config/menu_form.php"><i class="bi bi-dot"></i> 메뉴설정</a>
+                            <a class="nav-link" href="<?php echo CM_ADMIN_URL ?>/config/menu_form.php"><i class="bi bi-dot"></i> 메뉴관리</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="<?php echo CM_ADMIN_URL ?>/config/design_form.php"><i class="bi bi-dot"></i> 디자인관리</a>
@@ -41,9 +45,17 @@ if (!defined('_CMBOARD_')) exit; // 개별 페이지 접근 불가
 						<li class="nav-item">
                             <a class="nav-link" href="<?php echo CM_ADMIN_URL ?>/config/popup_list.php"><i class="bi bi-dot"></i> 팝업관리</a>
                         </li>
+						<li class="nav-item">
+                            <a class="nav-link" href="<?php echo CM_ADMIN_URL ?>/config/folder_list.php"><i class="bi bi-dot"></i> 폴더구조</a>
+                        </li>
+						<li class="nav-item">
+                            <a class="nav-link" href="<?php echo CM_ADMIN_URL ?>/config/db_list.php"><i class="bi bi-dot"></i> DB 테이블 확인</a>
+                        </li>
+						<!--
                         <li class="nav-item">
                             <a class="nav-link" href="<?php echo CM_ADMIN_URL ?>/config/sms_form.php"><i class="bi bi-dot"></i> 문자(SMS)설정</a>
                         </li>
+						-->
                     </ul>
                 </div>
             </li>
@@ -73,9 +85,11 @@ if (!defined('_CMBOARD_')) exit; // 개별 페이지 접근 불가
                         <li class="nav-item">
                             <a class="nav-link" href="<?php echo CM_ADMIN_URL ?>/member/email_form.php"><i class="bi bi-dot"></i> 이메일발송</a>
                         </li>
+						<!--
 						<li class="nav-item">
                             <a class="nav-link" href="<?php echo CM_ADMIN_URL ?>/member/sms_form.php"><i class="bi bi-dot"></i> 문자발송</a>
                         </li>
+						-->
                     </ul>
                 </div>
             </li>
@@ -99,9 +113,14 @@ if (!defined('_CMBOARD_')) exit; // 개별 페이지 접근 불가
                         <li class="nav-item">
                             <a class="nav-link" href="<?php echo CM_ADMIN_URL ?>/board/board_list.php"><i class="bi bi-dot"></i> 게시판관리</a>
                         </li>
+						<li class="nav-item">
+                            <a class="nav-link" href="<?php echo CM_ADMIN_URL ?>/board/content_list.php"><i class="bi bi-dot"></i> 내용관리</a>
+                        </li>
                     </ul>
                 </div>
             </li>
+			
+            
 
         </ul>
     </div>

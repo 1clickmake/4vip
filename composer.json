@@ -1,0 +1,16 @@
+{
+    "name": "quick-delivery/pwa",
+    "description": "Quick Delivery PWA Application",
+    "type": "project",
+    "require": {
+        "minishlink/web-push": "^6.0"
+    },
+    "config": {
+        "platform": {
+            "php": "7.4.0"
+        },
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true
+    }
+}

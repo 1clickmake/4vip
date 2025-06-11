@@ -47,4 +47,3 @@ try {
     // 에러 메시지 출력
     echo "<script>alert('오류: " . addslashes($e->getMessage()) . "'); history.back();</script>";
 }
-?>

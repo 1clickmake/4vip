@@ -64,6 +64,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $title = filter_input(INPUT_POST, 'title', FILTER_SANITIZE_SPECIAL_CHARS);
     $content = $_POST['content']; // HTML 내용은 별도 보안 처리
+	$category = isset($_POST['category']) ? $_POST['category'] : '';
+    $notice_chk = isset($_POST['notice_chk']) ? 1 : 0;
+	$secret_chk = isset($_POST['secret_chk']) ? 1 : 0;
+	$reply_chk = isset($_POST['reply_chk']) ? 1 : 0;
+	$comment_chk = isset($_POST['comment_chk']) ? 1 : 0;
     $ip = $_SERVER['REMOTE_ADDR'];
 
     try {
@@ -79,16 +84,78 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // 1. 게시글 데이터 insert
         $bo = get_board($board_id);
         
+        // 답변글 처리
+        $parent_num = filter_input(INPUT_POST, 'parent_num', FILTER_VALIDATE_INT);
+        $reply_depth = 0;
+        $reply_order = 0;
+        $thread_id = 0;
+
+        if ($parent_num) {
+            // 부모 게시글 정보 조회
+            $parent_sql = "SELECT reply_depth, reply_order, thread_id, board_num FROM cm_board WHERE board_num = :parent_num";
+            $parent_stmt = $pdo->prepare($parent_sql);
+            $parent_stmt->execute([':parent_num' => $parent_num]);
+            $parent = $parent_stmt->fetch();
+
+            if ($parent) {
+                error_log("Reply post: parent_num = {$parent_num}, parent_reply_depth = {$parent['reply_depth']}, parent_reply_order = {$parent['reply_order']}, parent_thread_id = {$parent['thread_id']}");
+
+                $reply_depth = $parent['reply_depth'] + 1;
+                // 부모 게시글의 thread_id가 0이면 부모의 board_num을 사용, 아니면 부모의 thread_id 사용
+                $thread_id = ($parent['thread_id'] == 0) ? $parent['board_num'] : $parent['thread_id'];
+
+                // 새로운 답글이 삽입될 위치의 reply_order 계산: 부모 게시글의 reply_order 바로 다음
+                $new_reply_order = $parent['reply_order'] + 1;
+
+                // 해당 thread_id 내에서, 새로운 답글의 위치(new_reply_order)보다 크거나 같은 모든 글들의 reply_order를 1 증가시킴
+                $order_update_sql = "UPDATE cm_board SET reply_order = reply_order + 1 WHERE thread_id = :thread_id AND reply_order >= :new_order_threshold";
+                $order_update_stmt = $pdo->prepare($order_update_sql);
+                $order_update_stmt->execute([':thread_id' => $thread_id, ':new_order_threshold' => $new_reply_order]);
+
+                // 새로운 답글에 할당될 reply_order
+                $reply_order = $new_reply_order;
+
+                error_log("Reply post: thread_id = {$thread_id}, Calculated new reply_order = {$reply_order}, Update SQL executed.");
+
+            } else {
+                 // 부모 게시글이 없는 경우 (오류 상황), 새로운 게시글처럼 처리하거나 오류 처리
+                 // 여기서는 새로운 게시글처럼 처리 (혹시 모를 경우)
+                 $parent_num = 0; // 부모 없음으로 설정
+                 $reply_depth = 0;
+                 $reply_order = 0;
+                 // thread_id는 아래에서 설정
+            }
+        }
+        
+        // 새로운 게시글이거나 부모가 없던 경우 thread_id 설정
+        if (!$parent_num) {
+             // 게시글 등록 후 board_num을 thread_id로 사용해야 하므로, 초기값 0으로 두고 insert 후에 업데이트
+             $thread_id = 0; 
+        }
+
         $boardData = [
             'group_id' => $bo['group_id'],
             'board_id' => $board_id,
-			'user_id' => $user_id,
+			'notice_chk' => $notice_chk,
+			'reply_chk' => $reply_chk,
+			'comment_chk' => $comment_chk,
+            'secret_chk' => $secret_chk,
+			'category' => $category,
+			'parent_num' => $parent_num ?: 0,  // parent_num이 0이면 0 설정
+            'reply_depth' => $reply_depth,
+            'reply_order' => $reply_order,
+			'thread_id' => $thread_id,
+            'user_id' => $user_id,
             'email' => $email,
             'name' => $name,
-            'title' => $title,
+            'title' => $parent_num ? 'RE: ' . $title : $title,
             'content' => $content,
             'ip' => $ip,
-            'reg_date' => date('Y-m-d H:i:s')
+			'view_count' => 0,
+			'good' => 0,
+			'bad' => 0,
+            'reg_date' => date('Y-m-d H:i:s'),
+			'update_date' => date('Y-m-d H:i:s')
         ];
         
         // 비회원인 경우에만 비밀번호 저장
@@ -99,6 +166,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $board_num = process_data_insert('cm_board', $boardData);
         if ($board_num === false) {
             throw new Exception("게시글 등록 실패");
+        }
+
+        // 새로운 게시글인 경우 board_num을 thread_id로 업데이트
+        if (!$parent_num || $thread_id === 0) {
+             $update_thread_sql = "UPDATE cm_board SET thread_id = :board_num WHERE board_num = :board_num";
+             $update_thread_stmt = $pdo->prepare($update_thread_sql);
+             $update_thread_stmt->execute([':board_num' => $board_num]);
         }
 
         // 2. 파일 업로드 처리
@@ -113,9 +187,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // 허용된 파일 확장자 목록
             $allowed_extensions = ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'zip', 'txt'];
             
+            // 전체 파일 크기 제한 (50MB)
+            $total_size = 0;
+            foreach ($_FILES['files']['size'] as $size) {
+                $total_size += $size;
+            }
+            if ($total_size > 50 * 1024 * 1024) {
+                throw new Exception("전체 파일 크기가 너무 큽니다. 최대 50MB까지 허용됩니다.");
+            }
+
+            // 파일 개수 제한 (10개)
+            if (count($_FILES['files']['name']) > 10) {
+                throw new Exception("최대 10개의 파일만 업로드할 수 있습니다.");
+            }
+            
+            $uploaded_files = [];
             foreach ($_FILES['files']['name'] as $i => $filename) {
                 if ($_FILES['files']['error'][$i] !== UPLOAD_ERR_OK) {
-                    continue; // 오류가 있는 파일은 건너뜀
+                    $error_message = match($_FILES['files']['error'][$i]) {
+                        UPLOAD_ERR_INI_SIZE => "파일 크기가 PHP 설정값을 초과했습니다.",
+                        UPLOAD_ERR_FORM_SIZE => "파일 크기가 HTML 폼에서 지정한 최대 크기를 초과했습니다.",
+                        UPLOAD_ERR_PARTIAL => "파일이 일부만 업로드되었습니다.",
+                        UPLOAD_ERR_NO_FILE => "파일이 업로드되지 않았습니다.",
+                        UPLOAD_ERR_NO_TMP_DIR => "임시 폴더가 없습니다.",
+                        UPLOAD_ERR_CANT_WRITE => "디스크에 파일을 쓸 수 없습니다.",
+                        UPLOAD_ERR_EXTENSION => "PHP 확장에 의해 업로드가 중지되었습니다.",
+                        default => "알 수 없는 업로드 오류가 발생했습니다."
+                    };
+                    throw new Exception($error_message);
                 }
                 
                 // 파일 확장자 검사
@@ -124,7 +223,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     throw new Exception("허용되지 않는 파일 형식입니다: " . $file_ext);
                 }
                 
-                // 파일 크기 제한 (20MB)
+                // 개별 파일 크기 제한 (20MB)
                 if ($_FILES['files']['size'][$i] > 20 * 1024 * 1024) {
                     throw new Exception("파일 크기가 너무 큽니다. 최대 20MB까지 허용됩니다.");
                 }
@@ -133,13 +232,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stored_filename = uniqid() . '_' . bin2hex(random_bytes(8)) . '.' . $file_ext;
                 $upload_file_path = $upload_dir . $stored_filename;
 
-                // 파일 업로드 및 악성코드 스캔 (있다면)
-                if (function_exists('virus_scan')) {
-                    if (!virus_scan($tmp_name)) {
-                        throw new Exception("악성코드가 발견되었습니다.");
-                    }
-                }
-
+                // 파일 업로드
                 if (move_uploaded_file($tmp_name, $upload_file_path)) {
                     $fileData = [
                         'board_id' => $board_id,
@@ -148,16 +241,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         'stored_filename' => $stored_filename,
                         'file_size' => $_FILES['files']['size'][$i],
                         'file_type' => $_FILES['files']['type'][$i],
-                        'upload_date' => date('Y-m-d H:i:s')
+                        'reg_date' => date('Y-m-d H:i:s')
                     ];
 
-                    if (process_file_insert('cm_board_file', $fileData) === false) {
-                        unlink($upload_file_path); // DB 저장 실패시 파일 삭제
-                        throw new Exception("파일 정보 저장 실패");
+                    try {
+                        // 파일 정보 저장 전 테이블 구조 확인
+                        $checkTable = $pdo->query("SHOW TABLES LIKE 'cm_board_file'");
+                        if ($checkTable->rowCount() === 0) {
+                            throw new Exception("파일 정보 테이블이 존재하지 않습니다.");
+                        }
+
+                        // 테이블 컬럼 확인
+                        $columns = $pdo->query("SHOW COLUMNS FROM cm_board_file")->fetchAll(PDO::FETCH_COLUMN);
+                        error_log("테이블 컬럼: " . print_r($columns, true));
+
+                        $file_id = process_file_insert('cm_board_file', $fileData);
+                        if ($file_id === false) {
+                            throw new Exception("파일 정보 저장 실패");
+                        }
+                        $uploaded_files[] = $filename;
+                    } catch (Exception $e) {
+                        // 파일 삭제 및 예외 발생
+                        if (file_exists($upload_file_path)) {
+                            unlink($upload_file_path);
+                        }
+                        error_log("파일 업로드 실패 상세: " . $e->getMessage() . " (파일: {$filename})");
+                        error_log("파일 데이터: " . print_r($fileData, true));
+                        throw new Exception("파일 정보 저장 실패: " . $e->getMessage());
                     }
                 } else {
                     throw new Exception("파일 업로드 실패");
                 }
+            }
+
+            // 업로드된 파일 목록 로깅
+            if (!empty($uploaded_files)) {
+                error_log("Uploaded files for board {$board_id}, post {$board_num}: " . implode(', ', $uploaded_files));
             }
         }
 

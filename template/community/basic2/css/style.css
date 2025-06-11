@@ -1,0 +1,270 @@
+@charset "utf-8";
+
+/* 전역 스타일 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    background: #f8f9fa;
+}
+		
+/* 헤더 스타일 */
+.top-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 8px 0;
+    font-size: 14px;
+}
+
+.top-header a {
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    margin: 0 10px;
+    transition: color 0.3s ease;
+}
+
+.top-header a:hover {
+    color: white;
+}
+
+/* 메인 네비게이션 */
+.main-navbar {
+    background: #ffffff;
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+
+.navbar-brand {
+    font-size: 28px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-right: 3rem;
+}
+
+/* 네비게이션 링크 스타일 */
+.navbar-nav .nav-link {
+    color: #2c3e50 !important;
+    font-weight: 500;
+    font-size: 16px;
+    padding: 15px 20px !important;
+    margin: 0 5px;
+    position: relative;
+    transition: all 0.3s ease;
+    text-transform: capitalize;
+}
+
+.navbar-nav .nav-link::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 3px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+}
+
+.navbar-nav .nav-link:hover::before,
+.navbar-nav .nav-link.active::before {
+    width: 80%;
+}
+
+.navbar-nav .nav-link:hover {
+    color: #667eea !important;
+    transform: translateY(-2px);
+}
+
+/* 드롭다운 메뉴 스타일 */
+.dropdown-menu {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    padding: 20px 0;
+    margin-top: 10px;
+    min-width: 280px;
+    background: white;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    display: none; /* 기본적으로 숨김 */
+}
+
+/* 직접적인 하위 드롭다운 메뉴만 표시 */
+.nav-item.dropdown:hover > .dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    display: block;
+}
+
+.dropdown-menu .nav-link {
+    color: #2c3e50 !important;
+    padding: 12px 25px !important;
+    font-size: 15px;
+    border-radius: 0;
+    margin: 0;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.dropdown-menu .nav-link::before {
+    display: none;
+}
+
+.dropdown-menu .nav-link:hover {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white !important;
+    padding-left: 35px !important;
+    transform: none;
+}
+
+/* .dropdown-menu .nav-link:hover::after {
+    content: '\f054';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    position: absolute;
+    right: 25px;
+    top: 50%;
+    transform: translateY(-50%);
+} */
+
+/* 서브 드롭다운 메뉴 */
+.mega-menu-level-2,
+.mega-menu-level-3,
+.mega-menu-level-4,
+.mega-menu-level-5 {
+    position: absolute;
+    top: 0;
+    left: 100%;
+    margin-left: 5px;
+    display: none; /* 기본적으로 숨김 */
+}
+
+/* 서브 드롭다운의 직접적인 부모가 hover될 때만 표시 */
+.dropdown:hover > .mega-menu-level-2,
+.dropdown:hover > .mega-menu-level-3,
+.dropdown:hover > .mega-menu-level-4,
+.dropdown:hover > .mega-menu-level-5 {
+    display: block;
+}
+
+.dropdown-menu.mega-menu-level-2,
+.dropdown-menu.mega-menu-level-3,
+.dropdown-menu.mega-menu-level-4,
+.dropdown-menu.mega-menu-level-5 {
+    min-width: 250px;
+    background: #f8f9fa;
+    border-left: 4px solid #667eea;
+}
+
+/* 모바일 토글러 */
+.navbar-toggler {
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.navbar-toggler:focus {
+    box-shadow: none;
+}
+
+/* .navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 1%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='m4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+ */
+/* 네비게이션 텍스트 */
+.navbar-text {
+    color: #6c757d;
+    font-size: 14px;
+    font-style: italic;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 991.98px) {
+    .navbar-nav .nav-link {
+        padding: 12px 0 !important;
+        margin: 5px 0;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .dropdown-menu {
+        position: static !important;
+        transform: none !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        box-shadow: none;
+        border-left: 3px solid #667eea;
+        margin: 10px 0;
+        background: #f8f9fa;
+        display: none; /* 모바일에서도 기본적으로 숨김 */
+    }
+    
+    .dropdown-menu.show {
+        display: block; /* Bootstrap의 show 클래스에 따라 표시 */
+    }
+    
+    .mega-menu-level-2,
+    .mega-menu-level-3,
+    .mega-menu-level-4,
+    .mega-menu-level-5 {
+        position: static !important;
+        margin-left: 20px;
+        display: none; /* 모바일에서도 기본적으로 숨김 */
+    }
+    
+    .dropdown:hover > .mega-menu-level-2,
+    .dropdown:hover > .mega-menu-level-3,
+    .dropdown:hover > .mega-menu-level-4,
+    .dropdown:hover > .mega-menu-level-5 {
+        display: block; /* 모바일에서 hover로 표시 */
+    }
+}
+
+/* 애니메이션 효과 */
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.navbar-collapse.show {
+    animation: slideInDown 0.3s ease;
+}
+
+/* 호버 효과 개선 */
+.nav-item.dropdown {
+    position: relative;
+}
+
+.nav-item.dropdown > .dropdown-menu {
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* 아이콘 추가 */
+/* .dropdown-toggle::after {
+    margin-left: 8px;
+    transition: transform 0.3s ease;
+} */
+
+.nav-item.dropdown:hover .dropdown-toggle::after {
+    transform: rotate(180deg);
+}

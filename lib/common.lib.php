@@ -1,16 +1,48 @@
 <?php
 if (!defined('_CMBOARD_')) exit; // 개별 페이지 직접 접근 방지
 
+/**
+ * 모바일 기기 접속 여부를 확인합니다.
+ * 
+ * @return bool 모바일 기기 접속 시 true, PC 접속 시 false 반환
+ */
+function is_mobile(): bool {
+    $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+    
+    // 모바일 기기 패턴
+    $mobile_patterns = [
+        'iPhone', 'iPod', 'iPad', 'Android', 'webOS', 'BlackBerry',
+        'IEMobile', 'Opera Mini', 'Mobile', 'Mobile Safari',
+        'Windows Phone', 'Symbian', 'Nokia', 'SonyEricsson',
+        'LG', 'Samsung', 'HTC', 'Motorola', 'Nexus'
+    ];
+    
+    // 모바일 기기 패턴 확인
+    foreach ($mobile_patterns as $pattern) {
+        if (stripos($user_agent, $pattern) !== false) {
+            return true;
+        }
+    }
+    
+    // 모바일 브라우저 헤더 확인
+    if (isset($_SERVER['HTTP_X_WAP_PROFILE']) || 
+        isset($_SERVER['HTTP_PROFILE']) || 
+        (isset($_SERVER['HTTP_ACCEPT']) && 
+         strpos($_SERVER['HTTP_ACCEPT'], 'text/vnd.wap.wml') !== false)) {
+        return true;
+    }
+    
+    return false;
+}
 
 // 변수 또는 배열의 이름과 값을 얻어냄. print_r() 함수의 변형
-function print_r2($var)
-{
+function print_r2($var) {
     ob_start();
     print_r($var);
     $str = ob_get_contents();
     ob_end_clean();
     $str = str_replace(" ", "&nbsp;", $str);
-    echo nl2br("<span style='font-family:Tahoma, 굴림; font-size:9pt;'>$str</span>");
+    echo nl2br("<span style='font-family:Tahoma, 굴림; font-size:9pt;'>".htmlspecialchars($str)."</span>");
 }
 
 /**
@@ -21,6 +53,32 @@ function print_r2($var)
 function get_current_filename(): string {
     $urlPath = $_SERVER['PHP_SELF'];
     return !empty($urlPath) ? pathinfo(basename($urlPath), PATHINFO_FILENAME) : '';
+}
+
+/**
+ * 현재 실행 중인 폴더의 이름을 반환합니다.
+ *
+ * @return string 현재 파일명 (확장자 제외), 실패 시 빈 문자열 반환
+ */
+function get_First_FolderName($url) {
+    $parsed_url = parse_url($url);
+    if (!isset($parsed_url['path'])) return '';
+
+    $parts = array_values(array_filter(explode('/', $parsed_url['path'])));
+    return isset($parts[0]) ? $parts[0] : '';
+}
+
+function is_AllowedFolder() {
+    $allowed_folders = ['board', 'adm', 'member'];
+
+    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https://" : "http://";
+    $host = $_SERVER['HTTP_HOST'];
+    $request_uri = $_SERVER['REQUEST_URI'];
+    $current_url = $protocol . $host . $request_uri;
+
+    $first_folder = get_First_FolderName($current_url);
+
+    return in_array($first_folder, $allowed_folders);
 }
 
 // 휴대폰번호의 숫자만 취한 후 중간에 하이픈(-)을 넣는다.
@@ -131,8 +189,8 @@ function get_board(string $board_id){
 }
 
 //회원정보
-function get_member(string $user_id){
-	if (!empty($board_id)) {
+function get_member($user_id){
+	if (!empty($user_id)) {
 		$sql = "SELECT * FROM `cm_users` WHERE `user_id` = :user_id";
 		$params = [
 			':user_id' => $user_id
@@ -150,7 +208,7 @@ function get_UserPoint($user_id, $point, $description, $action) {
 	global $pdo;
 	
     if (empty($user_id) || $point <= 0 || empty($description) || !in_array($action, ['add', 'cut'])) {
-        throw new Exception("잘못된 입력입니다. 모든 필드를 확인해주세요.");
+        throw new InvalidArgumentException("잘못된 입력입니다. 모든 필드를 확인해주세요.");
     }
 
     try {
@@ -163,7 +221,7 @@ function get_UserPoint($user_id, $point, $description, $action) {
         $user = $stmt->fetch();
 
         if (!$user) {
-            throw new Exception("존재하지 않는 회원 아이디입니다.");
+            throw new InvalidArgumentException("존재하지 않는 회원 아이디입니다.");
         }
 
         if ($action === 'add') {
@@ -197,14 +255,14 @@ function get_UserPoint($user_id, $point, $description, $action) {
 
             // 삭제된 행이 없으면 예외 발생
             if ($stmt->rowCount() === 0) {
-                throw new Exception("삭제할 포인트 내역이 없습니다.");
+                throw new InvalidArgumentException("삭제할 포인트 내역이 없습니다.");
             }
         }
 
         // 트랜잭션 커밋
         $pdo->commit();
         return true;
-    } catch (Exception $e) {
+    } catch (Throwable $e) {
         // 오류 발생 시 롤백
         $pdo->rollBack();
         throw $e;
@@ -218,7 +276,7 @@ function get_UserPoint($user_id, $point, $description, $action) {
  * @param string|null $redirect_url (선택 사항) 이동할 URL, null이면 이전 페이지로 이동
  * @return void
  */
-function alert(string $message, string $redirect_url = null): void {
+function alert(string $message, ?string $redirect_url = null) {
     $escaped_message = json_encode($message);
 
     echo '<script>';
@@ -233,7 +291,6 @@ function alert(string $message, string $redirect_url = null): void {
     echo '</script>';
     exit;
 }
-
 
 
 /**
@@ -262,20 +319,70 @@ function process_data_insert(string $tableName, array $data): string|false {
         $stmt->execute($data);
         return $pdo->lastInsertId();
     } catch (PDOException $e) {
-        error_log("process_data_insert 오류 ({$tableName}): " . $e->getMessage());
+        error_log("process_data_insert 오류 ({$tableName}): " . $e->getMessage() . " SQL: " . $sql . " DATA: " . json_encode($data));
         return false;
     }
 }
 
 /**
- * 파일 메타데이터를 삽입합니다. (process_data_insert() 래퍼 함수)
+ * 파일 메타데이터를 삽입합니다.
  *
  * @param string $tableName 삽입할 테이블 이름
  * @param array  $data      삽입할 데이터 (연관 배열)
  * @return string|false 삽입된 레코드의 ID, 실패 시 false 반환
  */
 function process_file_insert(string $tableName, array $data): string|false {
-    return process_data_insert($tableName, $data);
+    global $pdo;
+
+    if (empty($data)) {
+        error_log("process_file_insert: 삽입할 데이터가 비어 있습니다.");
+        return false;
+    }
+
+    try {
+        // 데이터베이스 연결 확인
+        if (!$pdo) {
+            error_log("process_file_insert: 데이터베이스 연결이 설정되지 않았습니다.");
+            return false;
+        }
+
+        // SQL 쿼리 생성
+        $columns = array_keys($data);
+        $placeholders = implode(', ', array_map(fn($col) => ":" . $col, $columns));
+        $columnSql = implode(', ', array_map(fn($col) => "`" . str_replace("`", "``", $col) . "`", $columns));
+
+        $sql = "INSERT INTO `" . str_replace("`", "``", $tableName) . "` ({$columnSql}) VALUES ({$placeholders})";
+        
+        error_log("SQL Query: " . $sql);
+        error_log("Parameters: " . print_r($data, true));
+
+        // 쿼리 실행
+        $stmt = $pdo->prepare($sql);
+        $result = $stmt->execute($data);
+        
+        if ($result === false) {
+            $error = $stmt->errorInfo();
+            error_log("process_file_insert 실패: " . print_r($error, true));
+            return false;
+        }
+
+        // 삽입된 ID 확인
+        $file_id = $pdo->lastInsertId();
+        if ($file_id === false) {
+            error_log("process_file_insert: lastInsertId 실패");
+            return false;
+        }
+
+        error_log("파일 정보 저장 성공 - ID: " . $file_id);
+        return $file_id;
+    } catch (PDOException $e) {
+        error_log("process_file_insert PDO 오류: " . $e->getMessage());
+        error_log("PDO 오류 코드: " . $e->getCode());
+        return false;
+    } catch (Exception $e) {
+        error_log("process_file_insert 일반 오류: " . $e->getMessage() . " SQL: " . $sql . " DATA: " . json_encode($data));
+        return false;
+    }
 }
 
 /**
@@ -291,7 +398,7 @@ function process_data_update(string $tableName, array $data, array $whereConditi
 
     if (empty($data) || empty($whereConditions)) {
         error_log("process_data_update: 업데이트할 데이터 또는 조건이 비어 있습니다.");
-        return false;
+        return true; // 데이터나 조건이 비어있으면 성공으로 처리
     }
 
     $setParts = array_map(fn($col) => "`" . str_replace("`", "``", $col) . "` = :" . $col, array_keys($data));
@@ -311,9 +418,9 @@ function process_data_update(string $tableName, array $data, array $whereConditi
     try {
         $stmt = $pdo->prepare($sql);
         $stmt->execute(array_merge($data, $whereData));
-        return $stmt->rowCount() > 0;
+        return true; // 업데이트 성공 여부와 관계없이 true 반환
     } catch (PDOException $e) {
-        error_log("process_data_update 오류 ({$tableName}): " . $e->getMessage());
+        error_log("process_data_update 오류 ({$tableName}): " . $e->getMessage() . " SQL: " . $sql . " DATA: " . json_encode($data) . " WHERE: " . json_encode($whereConditions));
         return false;
     }
 }
@@ -342,7 +449,7 @@ function process_data_delete(string $tableName, array $whereConditions): bool {
 
     if (empty($whereConditions)) {
         error_log("process_data_delete: 삭제 조건이 비어 있습니다.");
-        return false;
+        return true; // 조건이 비어있으면 성공으로 처리
     }
 
     $whereParts = [];
@@ -359,9 +466,9 @@ function process_data_delete(string $tableName, array $whereConditions): bool {
     try {
         $stmt = $pdo->prepare($sql);
         $stmt->execute($whereData);
-        return $stmt->rowCount() > 0;
+        return true; // 삭제 성공 여부와 관계없이 true 반환
     } catch (PDOException $e) {
-        error_log("process_data_delete 오류 ({$tableName}): " . $e->getMessage());
+        error_log("process_data_delete 오류 ({$tableName}): " . $e->getMessage() . " SQL: " . $sql . " WHERE: " . json_encode($whereConditions));
         return false;
     }
 }
@@ -375,6 +482,82 @@ function process_data_delete(string $tableName, array $whereConditions): bool {
  */
 function process_file_delete(string $tableName, array $whereConditions): bool {
     return process_data_delete($tableName, $whereConditions);
+}
+
+/**
+ * 특정 게시물 및 관련 데이터(댓글, 첨부파일, 에디터 이미지)를 모두 삭제합니다.
+ *
+ * @param int    $board_num 삭제할 게시물 번호
+ * @param string $board_id  게시판 ID
+ * @param string $content_column_name 게시물 내용이 저장된 컬럼명 (에디터 이미지 삭제용)
+ * @return bool 성공 시 true, 실패 시 false
+ */
+function delete_board_post_fully(int $board_num, string $board_id, string $content_column_name = 'content'): bool {
+    global $pdo;
+
+    // board_id 유효성 검사 (테이블명/경로에 사용되므로 중요)
+    if (empty($board_id) || !preg_match('/^[a-zA-Z0-9_.-]+$/', $board_id)) {
+        error_log("Invalid board_id for deletion: {$board_id}");
+        return false;
+    }
+    if (!defined('CM_DATA_PATH') || !defined('CM_DATA_URL')) {
+        error_log("CM_DATA_PATH or CM_DATA_URL not defined.");
+        return false;
+    }
+
+    try {
+        $pdo->beginTransaction();
+
+        // 1. 에디터 이미지 삭제 (DB에서 게시물 내용 조회 후 파일 삭제)
+        $editor_dir = CM_DATA_PATH . '/board/' . $board_id . '/editor/';
+        $editor_delete_result = process_editor_image_delete(
+            'cm_board', // 게시판 테이블명
+            $content_column_name, // 게시물 내용 컬럼명
+            ['board_num' => $board_num, 'board_id' => $board_id], // WHERE 조건
+            $editor_dir // 에디터 이미지 실제 경로
+        );
+
+        if (!$editor_delete_result['success']) {
+            error_log("Failed to delete editor images for board_num {$board_num}, board_id {$board_id}: " . $editor_delete_result['message']);
+            // 에디터 이미지 삭제 실패 시에도 로그만 남기고 계속 진행 (필요시 롤백 및 false 반환)
+        }
+
+        // 2. 댓글 삭제 (cm_board_comment)
+        $stmt_comments = $pdo->prepare("DELETE FROM cm_board_comment WHERE board_num = :board_num AND board_id = :board_id");
+        $stmt_comments->execute([':board_num' => $board_num, ':board_id' => $board_id]);
+
+        // 3. 첨부 파일 삭제 (물리적 파일 및 cm_board_file DB 레코드)
+        $stmt_files = $pdo->prepare("SELECT stored_filename FROM cm_board_file WHERE board_num = :board_num AND board_id = :board_id"); // 'bf_file'을 'stored_filename'으로 변경
+        $stmt_files->execute([':board_num' => $board_num, ':board_id' => $board_id]);
+        $files_to_delete = $stmt_files->fetchAll(PDO::FETCH_ASSOC);
+
+        $board_files_dir = CM_DATA_PATH . '/board/' . $board_id . '/';
+        foreach ($files_to_delete as $file) {
+            $file_path = $board_files_dir . $file['stored_filename']; // 'bf_file'을 'stored_filename'으로 변경
+            if (file_exists($file_path) && is_file($file_path)) {
+                if (!unlink($file_path)) {
+                    error_log("Failed to delete physical file: {$file_path}");
+                    // 파일 삭제 실패 시에도 로그만 남기고 계속 진행 (필요시 롤백)
+                }
+            }
+        }
+        $stmt_delete_db_files = $pdo->prepare("DELETE FROM cm_board_file WHERE board_num = :board_num AND board_id = :board_id");
+        $stmt_delete_db_files->execute([':board_num' => $board_num, ':board_id' => $board_id]);
+
+        // 4. 게시물 본문 삭제 (cm_board)
+        $stmt_post = $pdo->prepare("DELETE FROM cm_board WHERE board_num = :board_num AND board_id = :board_id");
+        $stmt_post->execute([':board_num' => $board_num, ':board_id' => $board_id]);
+
+        $pdo->commit();
+        return true;
+
+    } catch (Exception $e) { // PDOException 포함 모든 예외 처리
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        error_log("Error during full deletion of board post {$board_num} from board {$board_id}: " . $e->getMessage());
+        return false;
+    }
 }
 
 /**
@@ -408,7 +591,7 @@ function process_editor_image_upload(array $fileInfo, string $dataname)
     $file_ext = strtolower(pathinfo($original_filename, PATHINFO_EXTENSION));
 
     // 저장 경로 설정
-	if($dataname == "popup"){
+	if($dataname == "popup" || $dataname == "content"){
 		$upload_dir = CM_DATA_PATH . '/' . $dataname . '/';
 		$upload_url = CM_DATA_URL . '/' . $dataname ;
 	}else{
@@ -576,10 +759,18 @@ function sql_list(array $options = []): array {
             $params[":cond{$idx}_end"] = $value[1];
             $where_clauses[] = "$field BETWEEN :cond{$idx}_start AND :cond{$idx}_end";
 
-        } else {
-            if ($operator === 'LIKE') {
+        } elseif ($operator === 'LIKE') {
+            // IP 주소 검색인 경우 (ip_address 필드)
+            if ($field === 'ip_address') {
+                $where_clauses[] = "$field $operator $param_key";
+                $params[$param_key] = $value;
+            } else {
+                // 일반 LIKE 검색의 경우 기존처럼 양쪽에 % 추가
                 $value = '%' . $value . '%';
+                $where_clauses[] = "$field $operator $param_key";
+                $params[$param_key] = $value;
             }
+        } else {
             $where_clauses[] = "$field $operator $param_key";
             $params[$param_key] = $value;
         }
@@ -619,6 +810,7 @@ function sql_list(array $options = []): array {
             'total_pages' => $total_pages
         ];
     } catch (PDOException $e) {
+        error_log("sql_list 오류: " . $e->getMessage() . " SQL: " . $list_sql . " PARAMS: " . json_encode($params));
         throw new RuntimeException('DB 오류: ' . $e->getMessage());
     }
 }
@@ -632,7 +824,7 @@ function sql_board_list(string $table, array $options = []): array {
 
     if (!$pdo) {
         error_log("sql_fetch 오류: 데이터베이스 연결( \$pdo )이 설정되지 않았습니다.");
-        return false;
+        return [];
     }
 	
     $page = intval($options['page'] ?? 1);
@@ -640,9 +832,13 @@ function sql_board_list(string $table, array $options = []): array {
     $start = ($page - 1) * $per_page;
     
     $searches = $options['search'] ?? [];  // 필드별 조건 배열
-    $order_by = $options['order_by'] ?? 'id';
+    $order_by = $options['order_by'] ?? 'thread_id';
     $order_dir = strtoupper($options['order_dir'] ?? 'DESC');
     $debug = $options['debug'] ?? false;
+
+    // 기본 정렬 조건 설정
+    $default_order = "thread_id DESC, reply_depth ASC, reply_order ASC, board_num ASC";
+    $order_sql = $order_by === 'thread_id' ? $default_order : "$order_by $order_dir";
 
     $where_clauses = [];
     $params = [];
@@ -688,11 +884,15 @@ function sql_board_list(string $table, array $options = []): array {
 
     // 데이터 조회 쿼리
     $sql = "
-        SELECT *,
-            (SELECT COUNT(*) FROM cm_board_file WHERE board_num = {$table}.board_num) as file_count
-        FROM {$table}
+        SELECT b.*,
+            (SELECT COUNT(*) FROM cm_board_file WHERE board_num = b.board_num) as file_count
+        FROM {$table} b
         $where_sql
-        ORDER BY $order_by $order_dir
+        ORDER BY 
+            b.thread_id DESC,
+            b.reply_order ASC,
+            b.reply_depth ASC,
+            b.board_num ASC
         LIMIT :start, :per_page
     ";
 
@@ -700,26 +900,30 @@ function sql_board_list(string $table, array $options = []): array {
         echo "<pre>SQL: $sql\nParams: " . print_r($params, true) . "</pre>";
     }
 
-    $stmt = $pdo->prepare($sql);
-    $stmt->bindValue(':start', $start, PDO::PARAM_INT);
-    $stmt->bindValue(':per_page', $per_page, PDO::PARAM_INT);
+    try {
+        $stmt = $pdo->prepare($sql);
+        $stmt->bindValue(':start', $start, PDO::PARAM_INT);
+        $stmt->bindValue(':per_page', $per_page, PDO::PARAM_INT);
 
-    foreach ($params as $key => $value) {
-        $stmt->bindValue($key, $value);
+        foreach ($params as $key => $value) {
+            $stmt->bindValue($key, $value);
+        }
+
+        $stmt->execute();
+        $rows = $stmt->fetchAll();
+
+        return [
+            'list' => $rows,
+            'current_page' => $page,
+            'per_page' => $per_page,
+            'total_rows' => $total_rows,
+            'total_pages' => $total_pages
+        ];
+    } catch (PDOException $e) {
+        error_log("sql_board_list 오류: " . $e->getMessage() . " SQL: " . $sql . " PARAMS: " . json_encode($params));
+        throw $e;
     }
-
-    $stmt->execute();
-    $rows = $stmt->fetchAll();
-
-    return [
-        'list' => $rows,
-        'current_page' => $page,
-        'per_page' => $per_page,
-        'total_rows' => $total_rows,
-        'total_pages' => $total_pages
-    ];
 }
-
 /**
  * SQL 쿼리를 실행하고 전체 목록을 반환합니다. 간단한 리스트 조회 페이징처리 X
  *
@@ -794,6 +998,49 @@ function sql_count(string $sql, array $params = []): int {
 }
 
 /**
+ * 최신글 출력
+ *
+ * @param string $board_id    	게시판아이디
+ * @return int   $post_cnt      출력수
+ * @param string  $skin 		최신글 스킨 폴더명
+ */
+function get_new_post(string $board_id, int $post_cnt = 5, string $skin = 'basic_new_post'): string {
+    
+	global $pdo;
+
+    $sql = "SELECT * FROM cm_board WHERE board_id = :board_id AND reply_depth = '0' ORDER BY board_num DESC LIMIT :post_cnt";
+    $params = [
+        ':board_id' => $board_id,
+        ':post_cnt' => $post_cnt
+    ];
+    $latest_posts = sql_all_list($sql, $params);
+
+    $output = '';
+    if ($latest_posts) {
+        foreach ($latest_posts as $list) {
+            // Adjust the path to the skin file
+            $skin_file = CM_TEMPLATE_PATH . '/skin/new_post/' . $skin . '/new_post.skin.php';
+
+            // Check if the skin file exists
+            if (file_exists($skin_file)) {
+                // Include the skin file
+                ob_start();
+                include $skin_file;
+                $output .= ob_get_clean();
+            } else {
+                // Handle the case where the skin file does not exist
+                $output .= '<div class="text-center text-muted py-4"> 스킨 파일이 존재하지 않습니다: ' . htmlspecialchars($skin_file) . '</div>';
+            }
+        }
+    } else {
+        $output = '<div class="text-center text-muted py-4"> 등록된 게시글이 없습니다.</div>';
+    }
+
+    return $output;
+}
+
+
+/**
  * 페이지네이션 HTML 코드를 생성합니다.
  *
  * @param int   $current_page 현재 페이지 번호
@@ -856,4 +1103,123 @@ function render_pagination(int $current_page, int $total_pages, array $query_par
     </nav>
     <?php
     return ob_get_clean();
+}
+
+/**
+ * 정렬 아이콘을 생성합니다.
+ *
+ * @param string $current_field 현재 정렬 필드
+ * @param string $current_order 현재 정렬 방향
+ * @param string $field 비교할 필드
+ * @return string 정렬 아이콘 HTML
+ */
+function get_sort_icon(string $current_field, string $current_order, string $field): string {
+    if ($current_field !== $field) {
+        return '<i class="fas fa-sort"></i>';
+    }
+    return $current_order === 'ASC' ? 
+        '<i class="fas fa-sort-up"></i>' : 
+        '<i class="fas fa-sort-down"></i>';
+}
+
+/**
+ * 정렬 가능한 필드 목록을 반환합니다.
+ *
+ * @param string $table 테이블 이름
+ * @return array 정렬 가능한 필드 목록
+ */
+function get_sortable_fields(string $table): array {
+    $fields = [
+        'cm_users' => ['user_no', 'user_id', 'user_name', 'user_email', 'user_hp', 'user_lv', 'user_point', 'created_at'],
+        'cm_point' => ['id', 'user_id', 'point', 'description', 'created_at'],
+        'cm_board' => ['board_num', 'board_id', 'name', 'title', 'reg_date']
+    ];
+    
+    return $fields[$table] ?? [];
+}
+
+/**
+ * 파일 확장자에 따른 Font Awesome 아이콘 클래스를 반환합니다.
+ *
+ * @param string $filename 파일명 또는 확장자
+ * @return string Font Awesome 아이콘 클래스
+ */
+function get_file_icon_class(string $filename): string {
+    $file_ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+    
+    // 파일 타입별 아이콘 클래스 설정
+    switch($file_ext) {
+        case 'pdf':
+            return 'fa-file-pdf';
+        case 'doc':
+        case 'docx':
+            return 'fa-file-word';
+        case 'xls':
+        case 'xlsx':
+            return 'fa-file-excel';
+        case 'ppt':
+        case 'pptx':
+            return 'fa-file-powerpoint';
+        case 'zip':
+        case 'rar':
+            return 'fa-file-archive';
+        case 'txt':
+            return 'fa-file-alt';
+        default:
+            return 'fa-file';
+    }
+}
+
+/**
+ * 파일이 이미지인지 확인합니다.
+ *
+ * @param string $filename 파일명 또는 확장자
+ * @return bool 이미지 파일 여부
+ */
+function is_image_file(string $filename): bool {
+    $file_ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+    return in_array($file_ext, ['jpg', 'jpeg', 'png', 'gif', 'webp']);
+}
+
+
+
+// 구조 출력 함수 (불필요한 폴더 제외)
+//echo showTree(CM_PATH);
+//showTree(CM_PATH, '', ['vendor/composer', '.git', 'cache']);
+
+function showTree($dir, $prefix = '', $excludeFolders = []) {
+    // 기본 제외 폴더들
+    $defaultExclude = ['.', '..', '.git', 'node_modules', '.vscode', '.idea', 'cache', 'logs', '.well-known' ];
+    $excludeFolders = array_merge($defaultExclude, $excludeFolders);
+    
+    $files = scandir($dir);
+    $files = array_diff($files, $excludeFolders);
+    
+    // 파일과 폴더 분리 및 정렬
+    $folders = [];
+    $regularFiles = [];
+    
+    foreach ($files as $file) {
+        $path = $dir . '/' . $file;
+        if (is_dir($path)) {
+            $folders[] = $file;
+        } else {
+            $regularFiles[] = $file;
+        }
+    }
+    
+    sort($folders);
+    sort($regularFiles);
+    
+    // 폴더 먼저 출력
+    foreach ($folders as $folder) {
+        $path = $dir . '/' . $folder;
+        echo $prefix . '├── ' . $folder . "<br>";
+        showTree($path, $prefix . '│   ', $excludeFolders);
+    }
+    
+    // 파일 출력
+    foreach ($regularFiles as $file) {
+        echo $prefix . '├── ' . $file . "<br>";
+    }
 }

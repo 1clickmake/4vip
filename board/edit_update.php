@@ -93,6 +93,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $content = $_POST['content']; // HTML 내용은 별도 보안 처리
     $password = !empty($_POST['password']) ? password_hash($_POST['password'], PASSWORD_DEFAULT) : '';
     $delete_files = isset($_POST['delete_files']) ? (array)$_POST['delete_files'] : [];
+	$category = isset($_POST['category']) ? $_POST['category'] : '';
+    $notice_chk = isset($_POST['notice_chk']) ? 1 : 0;
+	$secret_chk = isset($_POST['secret_chk']) ? 1 : 0;
+	$reply_chk = isset($_POST['reply_chk']) ? 1 : 0;
+	$comment_chk = isset($_POST['comment_chk']) ? 1 : 0;
 
     try {
         // XSS 방지를 위한 HTML 퍼지 처리
@@ -105,6 +110,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $boardData = [
             'title' => $title,
             'content' => $content,
+			'notice_chk' => $notice_chk,
+			'reply_chk' => $reply_chk,
+			'comment_chk' => $comment_chk,
+            'secret_chk' => $secret_chk,
+            'category' => $category,
             'update_date' => date('Y-m-d H:i:s')
         ];
         
@@ -161,16 +171,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new Exception("업로드 디렉토리 생성 실패");
             }
 
+            // 허용된 파일 확장자 목록
+            $allowed_extensions = ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'zip', 'txt'];
+            
+            // 전체 파일 크기 제한 (50MB)
+            $total_size = 0;
+            foreach ($_FILES['files']['size'] as $size) {
+                $total_size += $size;
+            }
+            if ($total_size > 50 * 1024 * 1024) {
+                throw new Exception("전체 파일 크기가 너무 큽니다. 최대 50MB까지 허용됩니다.");
+            }
+
+            // 파일 개수 제한 (10개)
+            if (count($_FILES['files']['name']) > 10) {
+                throw new Exception("최대 10개의 파일만 업로드할 수 있습니다.");
+            }
+            
+            $uploaded_files = [];
             foreach ($_FILES['files']['name'] as $i => $filename) {
                 if ($_FILES['files']['error'][$i] !== UPLOAD_ERR_OK) {
-                    continue;
+                    $error_message = match($_FILES['files']['error'][$i]) {
+                        UPLOAD_ERR_INI_SIZE => "파일 크기가 PHP 설정값을 초과했습니다.",
+                        UPLOAD_ERR_FORM_SIZE => "파일 크기가 HTML 폼에서 지정한 최대 크기를 초과했습니다.",
+                        UPLOAD_ERR_PARTIAL => "파일이 일부만 업로드되었습니다.",
+                        UPLOAD_ERR_NO_FILE => "파일이 업로드되지 않았습니다.",
+                        UPLOAD_ERR_NO_TMP_DIR => "임시 폴더가 없습니다.",
+                        UPLOAD_ERR_CANT_WRITE => "디스크에 파일을 쓸 수 없습니다.",
+                        UPLOAD_ERR_EXTENSION => "PHP 확장에 의해 업로드가 중지되었습니다.",
+                        default => "알 수 없는 업로드 오류가 발생했습니다."
+                    };
+                    throw new Exception($error_message);
+                }
+                
+                // 파일 확장자 검사
+                $file_ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+                if (!in_array($file_ext, $allowed_extensions)) {
+                    throw new Exception("허용되지 않는 파일 형식입니다: " . $file_ext);
+                }
+                
+                // 개별 파일 크기 제한 (20MB)
+                if ($_FILES['files']['size'][$i] > 20 * 1024 * 1024) {
+                    throw new Exception("파일 크기가 너무 큽니다. 최대 20MB까지 허용됩니다.");
                 }
 
                 $tmp_name = $_FILES['files']['tmp_name'][$i];
-                $file_ext = pathinfo($filename, PATHINFO_EXTENSION);
                 $stored_filename = uniqid() . '_' . bin2hex(random_bytes(8)) . '.' . $file_ext;
                 $upload_file_path = $upload_dir . $stored_filename;
 
+                // 파일 업로드
                 if (move_uploaded_file($tmp_name, $upload_file_path)) {
                     $fileData = [
                         'board_id' => $board_id,
@@ -178,14 +227,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         'original_filename' => $filename,
                         'stored_filename' => $stored_filename,
                         'file_size' => $_FILES['files']['size'][$i],
-                        'file_type' => $_FILES['files']['type'][$i]
+                        'file_type' => $_FILES['files']['type'][$i],
+                        'reg_date' => date('Y-m-d H:i:s')
                     ];
 
-                    if (process_file_insert('cm_board_file', $fileData) === false) {
-                        unlink($upload_file_path);
-                        throw new Exception("파일 정보 저장 실패");
+                    try {
+                        // 파일 정보 저장 전 테이블 구조 확인
+                        $checkTable = $pdo->query("SHOW TABLES LIKE 'cm_board_file'");
+                        if ($checkTable->rowCount() === 0) {
+                            throw new Exception("파일 정보 테이블이 존재하지 않습니다.");
+                        }
+
+                        // 테이블 컬럼 확인
+                        $columns = $pdo->query("SHOW COLUMNS FROM cm_board_file")->fetchAll(PDO::FETCH_COLUMN);
+                        error_log("테이블 컬럼: " . print_r($columns, true));
+
+                        $file_id = process_file_insert('cm_board_file', $fileData);
+                        if ($file_id === false) {
+                            throw new Exception("파일 정보 저장 실패");
+                        }
+                        $uploaded_files[] = $filename;
+                    } catch (Exception $e) {
+                        // 파일 삭제 및 예외 발생
+                        if (file_exists($upload_file_path)) {
+                            unlink($upload_file_path);
+                        }
+                        error_log("파일 업로드 실패 상세: " . $e->getMessage() . " (파일: {$filename})");
+                        error_log("파일 데이터: " . print_r($fileData, true));
+                        throw new Exception("파일 정보 저장 실패: " . $e->getMessage());
                     }
+                } else {
+                    throw new Exception("파일 업로드 실패");
                 }
+            }
+
+            // 업로드된 파일 목록 로깅
+            if (!empty($uploaded_files)) {
+                error_log("Uploaded files for board {$board_id}, post {$board_num}: " . implode(', ', $uploaded_files));
             }
         }
 

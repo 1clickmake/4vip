@@ -8,9 +8,9 @@ include_once CM_ADMIN_PATH.'/admin.head.php';
 $default_start_date = date('Y-m-d', strtotime('-1 week'));
 $default_end_date = date('Y-m-d');
 
-$start_date = isset($_POST['start_date']) ? $_POST['start_date'] : $default_start_date;
-$end_date = isset($_POST['end_date']) ? $_POST['end_date'] : $default_end_date;
-$ip_address = !empty($_POST['ip_address']) ? $_POST['ip_address'] : null;
+$start_date = isset($_GET['start_date']) ? $_GET['start_date'] : $default_start_date;
+$end_date = isset($_GET['end_date']) ? $_GET['end_date'] : $default_end_date;
+$ip_address = !empty($_GET['ip_address']) ? $_GET['ip_address'] : null;
 
 // 삭제 처리
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_by_date'])) {
@@ -72,25 +72,34 @@ $options = [
     'conditions' => []
 ];
 
+// 정렬 처리
+$sort_field = $_GET['sort'] ?? 'visit_time';
+$sort_order = $_GET['order'] ?? 'DESC';
+
+// 정렬 가능한 필드 목록
+$sortable_fields = ['ip_address', 'visit_time', 'user_agent', 'referer', 'visit_count'];
+
+// 정렬 필드가 유효한지 확인
+if (in_array($sort_field, $sortable_fields)) {
+    $options['order_by'] = $sort_field . ' ' . $sort_order;
+}
+
 // 검색 조건이 있는 경우
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search_by_date'])) {
-    // 날짜 검색 조건
-    if (!empty($start_date) && !empty($end_date)) {
-        $options['conditions'][] = [
-            'field' => 'visit_time',
-            'operator' => 'BETWEEN',
-            'value' => [$start_date . ' 00:00:00', $end_date . ' 23:59:59']
-        ];
-    }
-    
-    // IP 주소 검색 조건
-    if (!empty($ip_address)) {
-        $options['conditions'][] = [
-            'field' => 'ip_address',
-            'operator' => 'LIKE',
-            'value' => $ip_address
-        ];
-    }
+if (!empty($start_date) && !empty($end_date)) {
+    $options['conditions'][] = [
+        'field' => 'visit_time',
+        'operator' => 'BETWEEN',
+        'value' => [$start_date . ' 00:00:00', $end_date . ' 23:59:59']
+    ];
+}
+
+// IP 주소 검색 조건
+if (!empty($ip_address)) {
+    $options['conditions'][] = [
+        'field' => 'ip_address',
+        'operator' => 'LIKE',
+        'value' => $ip_address . '%'
+    ];
 }
 
 $result = sql_list($options);
@@ -98,7 +107,7 @@ $total_pages = $result['total_pages'];
 $page = $result['current_page'];
 
 // 검색 결과 메시지
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search_by_date'])) {
+if (!empty($start_date) || !empty($end_date) || !empty($ip_address)) {
     if (empty($result['list'])) {
         $search_message = "검색 결과가 없습니다.";
     } else {
@@ -106,11 +115,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search_by_date'])) {
     }
 }
 ?>
+<input type="hidden" id="sort_field" value="<?php echo $sort_field;?>">
+<input type="hidden" id="sort_order" value="<?php echo $sort_order;?>">
 
     <!-- Main Content -->
     <div class="main-content shifted" id="mainContent">
         <div class="container-fluid">
-			<h2 class="admin-list-title"><?php echo $cm_title;?></h2>
+			<!-- 헤더 카드 -->
+            <div class="card shadow-sm mb-4 border-0 card-move">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="card-title mb-1 text-primary">
+                                <i class="bi bi-graph-up-arrow me-2"></i><?php echo $cm_title;?>
+                            </h2>
+                            <p class="card-text text-muted mb-0">홈페이지 방문자 목록 입니다.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
 			
 			<!-- 방문자 통계 -->
 			<div class="card mb-4">
@@ -119,21 +142,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search_by_date'])) {
 					<?php if (isset($stats_error)): ?>
 						<div class="alert alert-danger"><?php echo $stats_error; ?></div>
 					<?php else: ?>
-						<p>총 방문자 수: <?php echo $stats['total']; ?></p>
-						<p>오늘 방문자 수: <?php echo $stats['today']; ?></p>
-						<h5>상위 5개 IP</h5>
-						<ul>
-							<?php foreach ($stats['top_ips'] as $ip): ?>
-								<li><?php echo htmlspecialchars($ip['ip_address']); ?>: <?php echo $ip['count']; ?>회</li>
-							<?php endforeach; ?>
-						</ul>
+						<div class="row">
+							<div class="col-md-6">
+								<p><strong>총 방문자 수:</strong> <?php echo number_format($stats['total']); ?></p>
+								<p><strong>오늘 방문자 수:</strong> <?php echo number_format($stats['today']); ?></p>
+							</div>
+							<div class="col-md-6">
+								<h6>상위 5개 IP</h6>
+								<ul class="list-unstyled">
+									<?php foreach ($stats['top_ips'] as $ip): ?>
+										<li class="small"><?php echo htmlspecialchars($ip['ip_address']); ?>: <?php echo number_format($ip['count']); ?>회</li>
+									<?php endforeach; ?>
+								</ul>
+							</div>
+						</div>
 					<?php endif; ?>
 				</div>
 			</div>
 			
-			<!-- 날짜 구간 검색 및 삭제 -->
+			<!-- 검색 폼 -->
 			<div class="card mb-4">
-				<div class="card-header">날짜 구간으로 검색 및 삭제</div>
 				<div class="card-body">
 					<?php if (isset($delete_message)): ?>
 						<div class="alert <?php echo strpos($delete_message, '실패') ? 'alert-danger' : 'alert-success'; ?>">
@@ -145,26 +173,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search_by_date'])) {
 							<?php echo $search_message; ?>
 						</div>
 					<?php endif; ?>
-					<form method="POST">
-						<div class="row mb-3">
-							<div class="col-md-4">
-								<label for="start_date" class="form-label">시작 날짜</label>
-								<input type="date" class="form-control" id="start_date" name="start_date" value="<?php echo $start_date; ?>" required>
-							</div>
-							<div class="col-md-4">
-								<label for="end_date" class="form-label">종료 날짜</label>
-								<input type="date" class="form-control" id="end_date" name="end_date" value="<?php echo $end_date; ?>" required>
-							</div>
-							<div class="col-md-4">
-								<label for="ip_address" class="form-label">IP 주소 (선택사항)</label>
-								<input type="text" class="form-control" id="ip_address" name="ip_address" value="<?php echo $ip_address; ?>" placeholder="예: 192.168.1.1">
-							</div>
+					<form method="GET" class="row g-3" id="searchForm">
+						<div class="col-md-3">
+							<label for="start_date" class="form-label">시작 날짜 <span class="text-danger">*</span></label>
+							<input type="date" class="form-control" id="start_date" name="start_date" value="<?php echo $start_date; ?>" required>
 						</div>
-						<div class="row">
-							<div class="col-md-12 text-end">
-								<button type="submit" name="search_by_date" class="btn btn-primary me-2">검색</button>
-								<button type="submit" name="delete_by_date" class="btn btn-danger" onclick="return confirm('정말로 삭제하시겠습니까?');">삭제</button>
-							</div>
+						<div class="col-md-3">
+							<label for="end_date" class="form-label">종료 날짜 <span class="text-danger">*</span></label>
+							<input type="date" class="form-control" id="end_date" name="end_date" value="<?php echo $end_date; ?>" required>
+						</div>
+						<div class="col-md-3">
+							<label for="ip_address" class="form-label">IP 주소 (선택사항)</label>
+							<input type="text" class="form-control" id="ip_address" name="ip_address" value="<?php echo $ip_address; ?>" placeholder="예: 192.168.1.1">
+						</div>
+						<div class="col-md-3 d-flex align-items-end">
+							<button type="submit" class="btn btn-primary me-2">검색</button>
+							<button type="button" class="btn btn-danger me-2" onclick="confirmVisitDelete()">삭제</button>
+							<?php if (!empty($start_date) || !empty($end_date) || !empty($ip_address)): ?>
+							<a href="<?php echo $_SERVER['PHP_SELF']; ?>" class="btn btn-secondary">초기화</a>
+							<?php endif; ?>
 						</div>
 					</form>
 				</div>
@@ -175,12 +202,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search_by_date'])) {
 				<table class="table table-sm table-striped table-bordered align-middle" style="min-width:1200px;">
 					<thead class="table-dark text-center">
 						<tr>
-							<th scope="col">ID</th>
-							<th scope="col">IP 주소</th>
-							<th scope="col">방문 시간</th>
-							<th scope="col">사용자 에이전트</th>
-							<th scope="col">참조 URL</th>
-							<th scope="col">방문 횟수</th>
+							<th scope="col">No</th>
+							<th scope="col" class="sortable" data-field="ip_address">
+								IP 주소 
+								<?php echo get_sort_icon($sort_field, $sort_order, 'ip_address'); ?>
+							</th>
+							<th scope="col" class="sortable" data-field="visit_time">
+								방문 시간
+								<?php echo get_sort_icon($sort_field, $sort_order, 'visit_time'); ?>
+							</th>
+							<th scope="col" class="sortable" data-field="user_agent">
+								사용자 에이전트
+								<?php echo get_sort_icon($sort_field, $sort_order, 'user_agent'); ?>
+							</th>
+							<th scope="col" class="sortable" data-field="referer">
+								참조 URL
+								<?php echo get_sort_icon($sort_field, $sort_order, 'referer'); ?>
+							</th>
+							<th scope="col" class="sortable" data-field="visit_count">
+								방문 횟수
+								<?php echo get_sort_icon($sort_field, $sort_order, 'visit_count'); ?>
+							</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -198,9 +240,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search_by_date'])) {
 								<td><?php echo $list_no;?></td>
 								<td><?php echo htmlspecialchars($list['ip_address']);?></td>
 								<td><?php echo $list['visit_time'];?></td>
-								<td><?php echo htmlspecialchars($list['user_agent']);?></td>
-								<td><?php echo htmlspecialchars($list['referer'] ?? '');?></td>
-								<td><?php echo $list['visit_count'];?></td>
+								<td class="text-start" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="<?php echo htmlspecialchars($list['user_agent']);?>"><?php echo htmlspecialchars($list['user_agent']);?></td>
+								<td class="text-start" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="<?php echo htmlspecialchars($list['referer'] ?? '');?>"><?php echo htmlspecialchars($list['referer'] ?? '');?></td>
+								<td><?php echo number_format($list['visit_count']);?></td>
 							</tr>
 							<?php } ?>
 						<?php } ?>
@@ -214,7 +256,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search_by_date'])) {
 		</div>
     </div>
 
-    
 <?php
 include_once CM_ADMIN_PATH.'/admin.tail.php';
 ?>

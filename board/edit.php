@@ -54,7 +54,7 @@ try {
 $bo_title = "게시글 수정";
 $writeBtn = "수정";
 $formAction = CM_BOARD_URL."/edit_update.php";
-include_once CM_BOARD_PATH.'/board_skin/basic/write.skin.php';
+include_once CM_TEMPLATE_PATH.'/skin/board_skin/'.$bo['board_skin'].'/write.skin.php';
 
 include_once CM_PATH.'/tail.php';
 ?>
