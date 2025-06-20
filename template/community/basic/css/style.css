@@ -1,0 +1,318 @@
+/* ============================================
+   기본 템플릿 스타일
+   ============================================ */
+@charset "utf-8";
+
+/* 기본 바디 스타일 */
+body {
+    padding-top: 40px; /* 네비게이션 바 높이만큼 상단 여백 추가 */
+    min-height: 100vh;
+    position: relative;
+    background-color: #fff;
+}
+
+/* 기본 링크 스타일 */
+a {
+    text-decoration: none;
+}
+   
+   /* ============================================
+      네비게이션 바 스타일
+      ============================================ */
+#navbar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 1030; /* Bootstrap의 기본 z-index보다 높게 설정 */
+    background-color: #343a40; /* 배경색 명시적 설정 */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* 그림자 효과 추가 */
+}
+   
+#navbar h1 {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #fff;
+    padding: 0;
+    margin: 0;
+    line-height: 1.2;
+}
+
+#navbar h1 a {
+    display: block;
+    padding: 15px 0;
+    color: #fff;
+    transition: color 0.2s ease;
+}
+
+#navbar h1 a:hover {
+    color: #f8f9fa;
+    text-decoration: none;
+}
+   
+/* ============================================
+      커스텀 네비게이션 바
+      ============================================ */
+.custom-navbar {
+    padding: 0;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    height: 100%;
+}
+   
+   /* ============================================
+      메뉴 리스트 스타일
+      ============================================ */
+   /* 모든 레벨의 ul 기본 스타일 */
+   .custom-navbar ul {
+       list-style: none;
+       margin: 0;
+       padding: 0;
+   }
+   
+   /* 모든 레벨의 li 기본 스타일 */
+   .custom-navbar ul li {
+       position: relative; /* 하위 메뉴의 기준점 */
+   }
+   
+   /* 모든 레벨의 링크 기본 스타일 */
+   .custom-navbar ul li a {
+       text-decoration: none;
+       color: #fff;
+       padding: 15px 20px;
+       display: block;
+       white-space: nowrap;
+   }
+   
+   /* ============================================
+      1차 메뉴 스타일
+      ============================================ */
+   .custom-navbar > ul > li {
+       float: left;
+   }
+   
+   .custom-navbar > ul > li > a {
+       color: #fff;
+   }
+   
+   .custom-navbar > ul > li > a:hover {
+       background-color: #555;
+       color: #fff;
+   }
+   
+   /* ============================================
+      하위 메뉴 (2차, 3차) 스타일
+      ============================================ */
+   .custom-navbar ul ul {
+       display: none; /* 기본적으로 숨김 (jQuery로 제어) */
+       position: absolute;
+       top: 100%; /* 부모 메뉴 아래에 위치 */
+       left: 0;
+       background-color: #444;
+       min-width: 200px;
+       box-shadow: 0 6px 12px rgba(0,0,0,0.175);
+       z-index: 1001;
+       padding: 0;
+       margin: 0;
+       border-radius: 0 0 4px 4px;
+   }
+   
+   /* 3차 메뉴는 오른쪽에 표시 */
+   .custom-navbar ul ul ul {
+       top: 0;
+       left: 100%;
+   }
+   
+   /* 2차 메뉴 이후 링크 스타일 */
+   .custom-navbar ul ul li a {
+       color: #f0f0f0;
+       padding: 12px 20px;
+       display: block;
+       width: 100%;
+       transition: all 0.2s ease;
+   }
+   
+   .custom-navbar ul ul li a:hover {
+       background-color: #666;
+       color: #fff;
+       width: 100%;
+       display: block;
+       padding: 12px 20px;
+   }
+   
+   /* ============================================
+      드롭다운 화살표 아이콘
+      ============================================ */
+   /* 1차 메뉴의 드롭다운 화살표 */
+   .custom-navbar ul li.dropdown > a::after {
+       content: '\f078'; /* bi-chevron-down */
+       font-family: 'bootstrap-icons';
+       margin-left: 5px;
+       position: absolute;
+       right: 5px;
+       top: 50%;
+   }
+   
+   /* 2차 메뉴 이후의 드롭다운 화살표 */
+   .custom-navbar ul ul li.dropdown > a::after {
+       content: '\f054'; /* bi-chevron-right */
+       right: 12px;
+       left: auto;
+   }
+   
+   /* ============================================
+      Clearfix (float 해제)
+      ============================================ */
+   .custom-navbar > ul::after {
+       content: "";
+       display: table;
+       clear: both;
+   }
+   
+   /* ============================================
+      아코디언 메뉴 스타일 (오프캔버스용)
+      ============================================ */
+   #site-menu .accordion {
+       --bs-accordion-bg: transparent;
+       --bs-accordion-border-width: 0;
+       --bs-accordion-btn-padding-x: 1.25rem;
+       --bs-accordion-btn-padding-y: 0.75rem;
+       --bs-accordion-body-padding-x: 0;
+       --bs-accordion-body-padding-y: 0.5rem;
+   }
+   
+   #site-menu .accordion-button {
+       font-weight: 500;
+       padding: var(--bs-accordion-btn-padding-y) var(--bs-accordion-btn-padding-x);
+       border-radius: 0;
+       box-shadow: none;
+       position: relative;
+       display: flex;
+       justify-content: space-between;
+       align-items: center;
+   }
+   
+   #site-menu .accordion-button:not(.collapsed) {
+       color: #0d6efd;
+       background-color: rgba(13, 110, 253, 0.05);
+   }
+   
+   #site-menu .accordion-button:focus {
+       box-shadow: none;
+       border-color: transparent;
+   }
+   
+   #site-menu .accordion-button::after {
+       display: none; /* 기본 Bootstrap 화살표 제거 */
+   }
+   
+   #site-menu .accordion-button .accordion-arrow {
+       position: absolute;
+       right: 1.25rem; /* 우측 고정 */
+       top: 50%;
+       transform: translateY(-50%);
+       font-size: 0.9rem; /* 아이콘 크기 조정 */
+   }
+   
+   #site-menu .accordion-item {
+       border: none;
+       border-bottom: 1px solid rgba(0,0,0,0.05);
+   }
+   
+   #site-menu .accordion-body {
+       padding: 0;
+   }
+   
+   #site-menu .list-group-item {
+       border: none;
+       border-radius: 0 !important;
+       padding: 0.5rem 1.25rem;
+       font-size: 0.9rem;
+   }
+   
+   #site-menu .list-group-item-action {
+       color: #495057;
+   }
+   
+   #site-menu .list-group-item-action:hover {
+       color: #0d6efd;
+       background-color: #f8f9fa;
+   }
+   
+   /* 동적 패딩 적용 */
+   #site-menu .accordion .accordion-button {
+       padding-left: calc(var(--bs-accordion-btn-padding-x) + 10px); /* 2차 메뉴 */
+   }
+   
+   #site-menu .accordion .accordion .accordion-button {
+       padding-left: calc(var(--bs-accordion-btn-padding-x) + 20px); /* 3차 메뉴 */
+   }
+   
+   #site-menu .accordion .list-group-item {
+       padding-left: calc(1.25rem + 10px); /* 2차 메뉴 */
+   }
+   
+   #site-menu .accordion .accordion .list-group-item {
+       padding-left: calc(1.25rem + 20px); /* 3차 메뉴 */
+   }
+   
+   /* 오프캔버스 내부 스크롤 */
+   .offcanvas-body {
+       overflow-y: auto; 
+   }
+
+   /* SNS 아이콘 스타일 */
+   .sns-icons {
+       display: flex;
+       gap: 12px;
+       justify-content: flex-end;
+       flex-wrap: wrap;
+   }
+   
+   .sns-icon {
+       display: inline-flex;
+       align-items: center;
+       justify-content: center;
+       width: 36px;
+       height: 36px;
+       background-color: #ffffff;
+       color: #333333;
+       border-radius: 50%;
+       text-decoration: none;
+       transition: all 0.3s ease;
+       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+   }
+   
+   .sns-icon i {
+       font-size: 16px;
+   }
+   
+   .sns-icon:hover {
+       transform: translateY(-3px);
+       box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+   }
+   
+   /* SNS별 색상 */
+   .sns-icon.facebook { color: #3b5998; }
+   .sns-icon.facebook:hover { background-color: #3b5998; color: white; }
+   
+   .sns-icon.x-twitter { color: #000000; }
+   .sns-icon.x-twitter:hover { background-color: #000000; color: white; }
+   
+   .sns-icon.kakaotalk { color: #3c1e1e; }
+   .sns-icon.kakaotalk:hover { background-color: #FFE812; color: #3c1e1e; }
+   
+   .sns-icon.naver-blog { color: #03cf5d; }
+   .sns-icon.naver-blog:hover { background-color: #03cf5d; color: white; }
+   
+   .sns-icon.line { color: #00c300; }
+   .sns-icon.line:hover { background-color: #00c300; color: white; }
+   
+   .sns-icon.pinterest { color: #e60023; }
+   .sns-icon.pinterest:hover { background-color: #e60023; color: white; }
+   
+   .sns-icon.linkedin { color: #0077b5; }
+   .sns-icon.linkedin:hover { background-color: #0077b5; color: white; }
+ 
+   .copyright {font-size: 0.8rem;}
