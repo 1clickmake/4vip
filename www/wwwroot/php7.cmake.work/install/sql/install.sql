@@ -1,5 +1,5 @@
 --
--- 테이블 구조 `cm_board`
+-- 테이블 구조 `cm_board` 
 --
 
 DROP TABLE IF EXISTS `cm_board`;
@@ -325,8 +325,15 @@ INSERT INTO `cm_board_list` (`board_id`, `board_name`, `group_id`, `group_name`,
 -- 테이블의 덤프 데이터 `cm_config`
 --
 
-INSERT INTO `cm_config` (`id`, `admin_id`, `cf_original_lang`, `site_title`, `admin_email`, `contact_number`, `fax_number`, `add_meta`, `template_id`, `shop_template_id`, `ip_access`, `ip_block`, `recaptcha_site_key`, `recaptcha_secret_key`, `google_map_iframe_src`, `deepl_api_use`, `deepl_api_key`, `deepl_api_plan`, `pwa_use`, `pwa_vapid_public_key`, `pwa_vapid_private_key`, `business_reg_no`, `online_sales_no`, `representative_name`, `privacy_manager`, `business_address`, `business_type`, `business_category`, `operating_hours`, `bank_name`, `account_holder`, `account_number`, `cf_add_sub_1`, `cf_add_con_1`, `cf_add_sub_2`, `cf_add_con_2`, `cf_add_sub_3`, `cf_add_con_3`, `cf_add_sub_4`, `cf_add_con_4`, `cf_add_sub_5`, `cf_add_con_5`, `updated_at`) VALUES
-(1,	'',	'KO',	'CM_BOARD',	'',	'',	'',	'',	'basic', 'shop_basic',	'',	'',	'',	'',	'',	0,	'',	'free',	0,	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	NOW());
+INSERT INTO `cm_config` (`id`, `admin_id`, `cf_original_lang`, `site_title`, `admin_email`, `contact_number`, `fax_number`, `add_meta`, `add_js`, `template_id`, `shop_template_id`, `ip_access`, `ip_block`, `recaptcha_site_key`, `recaptcha_secret_key`, `google_map_iframe_src`, `deepl_api_use`, `deepl_api_key`, `deepl_api_plan`, `pwa_use`, `pwa_vapid_public_key`, `pwa_vapid_private_key`, `business_reg_no`, `online_sales_no`, `representative_name`, `privacy_manager`, `business_address`, `business_type`, `business_category`, `operating_hours`, `bank_name`, `account_holder`, `account_number`, `cf_add_sub_1`, `cf_add_con_1`, `cf_add_sub_2`, `cf_add_con_2`, `cf_add_sub_3`, `cf_add_con_3`, `cf_add_sub_4`, `cf_add_con_4`, `cf_add_sub_5`, `cf_add_con_5`, `updated_at`) VALUES
+(1,	'',	'KO',	'CM_BOARD',	'',	'',	'',	'',	'',	'basic', 'shop_basic',	'',	'',	'',	'',	'',	0,	'',	'free',	0,	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	NOW());
+
+--
+-- 테이블의 덤프 데이터 `cm_board_group`
+--
+
+INSERT INTO `cm_board_group` (`group_id`, `group_name`, `created_at`) VALUES
+('community',	'커뮤니티',	NOW());
 
 --
 -- 테이블의 덤프 데이터 `cm_menu`

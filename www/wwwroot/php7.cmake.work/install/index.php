@@ -46,15 +46,8 @@ foreach ($required_dirs as $dir) {
 
 // 이미 설치가 완료된 경우 메인 페이지로 리다이렉트
 if (file_exists('../data/config.php')) {
-    try {
-        require_once '../data/config.php';
-        // $db는 CM_DB 클래스 인스턴스라고 가정
-        $db = CM_DB::getInstance();
-        header('Location: ../index.php');
-        exit;
-    } catch (Exception $e) {
-        // 데이터베이스 연결 실패 시 설치 계속 진행
-    }
+    header('Location: ../index.php');
+    exit;
 }
 
 $error = '';

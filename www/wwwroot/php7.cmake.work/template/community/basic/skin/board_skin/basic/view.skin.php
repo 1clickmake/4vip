@@ -28,7 +28,7 @@ if (!defined('_CMBOARD_')) exit; // 개별 페이지 접근 불가
             <?php echo htmlspecialchars($view['title'] ?? ''); ?>
         </h1>
         
-        <div class="d-flex flex-wrap gap-3 text-muted small mb-4 pb-3 border-bottom">
+        <div class="d-flex flex-wrap gap-3 text-muted small py-2 border-bottom">
             <span><i class="bi bi-person me-1"></i> <?php echo htmlspecialchars($view['name'] ?? '알 수 없음'); ?></span>
             <span><i class="bi bi-calendar me-1"></i> <?php echo date('Y-m-d H:i', strtotime($view['reg_date'] ?? 'now')); ?></span>
             <span><i class="bi bi-eye me-1"></i> <?php echo number_format($view['view_count'] ?? 0); ?></span>
@@ -36,8 +36,9 @@ if (!defined('_CMBOARD_')) exit; // 개별 페이지 접근 불가
         </div>
 
         <?php if (!empty($view['tags'])): ?>
-            <div class="mb-2">
+            <div class="py-2 border-bottom">
                 <div>
+					<span class="me-3">Tag : </span>
                     <?php foreach (explode(',', $view['tags']) as $tag): ?>
                         <?php $tag = trim($tag); if ($tag): ?>
                             <span class="tag-badge"><?= htmlspecialchars($tag) ?></span>

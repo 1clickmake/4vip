@@ -120,7 +120,7 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
                                 <label for="co_add_html" class="form-label">개발자용 에디터</label>
                                 <div class="alert alert-warning mb-2">
                                     <i class="fas fa-exclamation-triangle me-2"></i>
-                                    기본에디터로 원하는 기능을 구현하지 못할 경우 개발자용 에디터에서 <span class="text-primary fw-bold">HTML+PHP+JS+CSS</span> 등 언어로 페이지 개발을 할수 있습니다.
+                                    기본에디터로 원하는 기능을 구현하지 못할 경우 개발자용 에디터에서 <span class="text-primary fw-bold">HTML+JS+CSS</span> 등 언어로 페이지 개발을 할수 있습니다.
                                     <br>
                                     <span class="text-danger">작성한 소스의 오류시 사이트에 심각한 에러가 발생할 수 있으니 주의해서 작성해 주시길 바랍니다.</span>
                                 </div>

@@ -94,14 +94,18 @@ function get_visit() {
             }
         }
 
-        $stmt = $pdo->prepare("SELECT id, visit_count FROM cm_visit WHERE ip_address = ? AND referer = ?");
-        $stmt->execute([$ip_address, $referer]);
+        // 오늘 날짜 확인
+        $today = date('Y-m-d');
+        $stmt = $pdo->prepare("SELECT id, visit_count FROM cm_visit WHERE ip_address = ? AND DATE(visit_time) = ?");
+        $stmt->execute([$ip_address, $today]);
         $existing = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($existing) {
+            // 이미 오늘 방문 기록이 있는 경우, 카운트만 증가
             $stmt = $pdo->prepare("UPDATE cm_visit SET visit_count = visit_count + 1, visit_time = ? WHERE id = ?");
             $stmt->execute([$visit_time, $existing['id']]);
         } else {
+            // 오늘 방문 기록이 없는 경우, 새로운 기록 삽입
             $stmt = $pdo->prepare("INSERT INTO cm_visit (ip_address, ip_country, ip_countryCode, ip_city, ip_isp, visit_time, user_agent, referer, visit_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
             $stmt->execute([$ip_address, $country, $country_code, $city, $isp, $visit_time, $user_agent, $referer, 1]);
         }
