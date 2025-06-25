@@ -19,8 +19,8 @@ $writeBtn = "등록";
 $formAction = CM_BOARD_URL."/write_update.php";
 include_once CM_TEMPLATE_PATH.'/skin/board_skin/'.$bo['board_skin'].'/write.skin.php';
 echo '<script>
-var recaptcha_site	= ' . json_encode($recaptcha_site) . ';
-var recaptcha_secret	= ' . json_encode($recaptcha_secret) . ';
+var recaptcha_site = ' . json_encode($recaptcha_site) . ';
+var recaptcha_secret = ' . json_encode($recaptcha_secret) . ';
 </script>';
 echo '<script src="' . CM_URL . '/js/board.write.js?ver=' . time() . '"></script>';
 include_once CM_PATH.'/tail.php';

@@ -208,7 +208,7 @@ document.addEventListener('DOMContentLoaded', function () {
         content.value = quill.root.innerHTML;
     });
 
-    if(window.recaptcha_site && window.recaptcha_secret){
+    if(recaptcha_site && recaptcha_secret){
         form.addEventListener('submit', function (e) {
             e.preventDefault(); // 폼 제출 막기
             grecaptcha.ready(function() {

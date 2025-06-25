@@ -27,8 +27,8 @@ CREATE TABLE `cm_board` (
   `view_count` int(11) NOT NULL DEFAULT '0' COMMENT 'hit 수',
   `good` int(11) NOT NULL DEFAULT '0' COMMENT '종아요',
   `bad` int(11) NOT NULL DEFAULT '0' COMMENT '싫어요',
-  `reg_date` datetime NOT NULL default '0000-00-00 00:00:00',
-  `update_date` datetime NOT NULL default '0000-00-00 00:00:00',
+  `reg_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `update_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `add_col_1` varchar(255) NOT NULL default '',
   `add_col_2` varchar(255) NOT NULL default '',
   `add_col_3` varchar(255) NOT NULL default '',
@@ -57,8 +57,8 @@ CREATE TABLE `cm_board_comment` (
   `password` varchar(255) NOT NULL default '',
   `content` text NOT NULL,
   `ip` varchar(255) NOT NULL default '',
-  `reg_date` datetime NOT NULL default '0000-00-00 00:00:00',
-  `update_date` datetime NOT NULL default '0000-00-00 00:00:00',
+  `reg_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `update_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY  (`comment_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
@@ -75,7 +75,7 @@ CREATE TABLE `cm_board_file` (
   `stored_filename` varchar(255) NOT NULL default '',
   `file_size` int(11) NOT NULL DEFAULT '0',
   `file_type` varchar(255) NOT NULL default '',
-  `reg_date` datetime NOT NULL default '0000-00-00 00:00:00',
+  `reg_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY  (`file_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
@@ -87,7 +87,7 @@ DROP TABLE IF EXISTS `cm_board_group`;
 CREATE TABLE `cm_board_group` (
   `group_id` varchar(255) NOT NULL default '',
   `group_name` varchar(255) NOT NULL default '',
-  `created_at` datetime NOT NULL default '0000-00-00 00:00:00',
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY  (`group_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
@@ -106,7 +106,7 @@ CREATE TABLE `cm_board_list` (
   `write_lv` int(11) NOT NULL default '0',
   `list_lv` int(11) NOT NULL default '0',
   `view_lv` int(11) NOT NULL default '0',
-  `created_at` datetime NOT NULL default '0000-00-00 00:00:00',
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY  (`board_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
@@ -169,7 +169,7 @@ CREATE TABLE `cm_config` (
   `cf_add_con_4` varchar(255) NOT NULL default '' COMMENT '여분필드 4 내용 (사용자 정의 값)',
   `cf_add_sub_5` varchar(255) NOT NULL default '' COMMENT '여분필드 5 제목 (사용자 정의 필드)',
   `cf_add_con_5` varchar(255) NOT NULL default '' COMMENT '여분필드 5 내용 (사용자 정의 값)',
-  `updated_at` datetime NOT NULL default '0000-00-00 00:00:00',
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY  (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
@@ -186,9 +186,9 @@ CREATE TABLE `cm_contact` (
   `phone`  varchar(255) NOT NULL default '',
   `subject`  varchar(255) NOT NULL default '',
   `message` text NOT NULL,
-  `created_at` datetime NOT NULL default '0000-00-00 00:00:00',
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `read_chk` tinyint(4) NOT NULL default '0',
-  `read_chk_date` datetime NOT NULL default '0000-00-00 00:00:00',
+  `read_chk_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY  (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
@@ -223,8 +223,8 @@ CREATE TABLE `cm_menu` (
   `is_disabled` tinyint(1) DEFAULT 0,
   `menu_level` tinyint(4) NOT NULL default '0' COMMENT '메뉴의 중첩 레벨 (1부터 무제한)',
   `sort_order` int(4) NOT NULL default '0' COMMENT '동일 상위 메뉴 내 출력 순서',
-  `created_at` datetime NOT NULL default '0000-00-00 00:00:00',
-  `updated_at` datetime NOT NULL default '0000-00-00 00:00:00',
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY  (`menu_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
@@ -239,7 +239,7 @@ CREATE TABLE `cm_point` (
   `user_id` varchar(255) NOT NULL default '' COMMENT '회원 아이디',
   `point` int(11) NOT NULL default '0' COMMENT '포인트',
   `description` varchar(255) NOT NULL default '' COMMENT '포인트 지급/삭제 사유',
-  `created_at` datetime NOT NULL default '0000-00-00 00:00:00' COMMENT '등록일',
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP  COMMENT '등록일',
   PRIMARY KEY  (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
@@ -257,13 +257,13 @@ CREATE TABLE `cm_popup` (
   `po_left` int(11) NOT NULL default '0'  COMMENT '좌측위치',
   `po_width` int(11) NOT NULL default '0'  COMMENT '가로사이즈',
   `po_height` int(11) NOT NULL default '0'  COMMENT '세로사이즈',
-  `po_start_date` date NOT NULL default '0000-00-00' COMMENT '시작일',
-  `po_end_date` date NOT NULL default '0000-00-00' COMMENT '종료일',
+  `po_start_date` date NOT NULL  COMMENT '시작일',
+  `po_end_date` date NOT NULL  COMMENT '종료일',
   `po_cookie_time` int(11) NOT NULL default '24' COMMENT '쿠키 유지시간(시간)',
   `po_url` varchar(255) NOT NULL default '' COMMENT '팝업 URL',
   `po_target` varchar(255) NOT NULL default '' COMMENT '_blank' COMMENT '타겟(_blank, _self)',
   `po_use` tinyint(4) NOT NULL default '0' COMMENT '사용여부(1:사용, 0:미사용)',
-  `po_reg_date` datetime NOT NULL default '0000-00-00 00:00:00' COMMENT '등록일',
+  `po_reg_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP  COMMENT '등록일',
   PRIMARY KEY  (`po_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8  COMMENT='팝업레이어 관리';
 
@@ -283,14 +283,13 @@ CREATE TABLE `cm_users` (
   `user_lv` int(11) NOT NULL default '0' COMMENT '회원레벨',
   `user_point` int(11) NOT NULL default '0',
   `user_block` int(11) NOT NULL default '0' COMMENT '회원차단1',
-  `user_block_date` datetime NOT NULL default '0000-00-00 00:00:00' COMMENT '차단일자',
+  `user_block_date` datetime NULL COMMENT '차단일자',
   `user_leave` int(11) NOT NULL default '0' COMMENT '회원탈퇴1',
-  `user_leave_date` datetime NOT NULL default '0000-00-00 00:00:00' COMMENT '회원탈퇴일',
+  `user_leave_date` datetime NULL COMMENT '회원탈퇴일',
   `user_recommend` varchar(255) NOT NULL default '',
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp() COMMENT '가입일',
-  `today_login` datetime NOT NULL default '0000-00-00 00:00:00' COMMENT '로그인 시간',
-  PRIMARY KEY  (`user_no`),
-  UNIQUE KEY `user_id` (`user_id`)
+  `created_at`  datetime NOT NULL DEFAULT CURRENT_TIMESTAMP  COMMENT '가입일',
+  `today_login` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP  COMMENT '로그인 시간',
+  PRIMARY KEY  (`user_no`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
@@ -306,7 +305,7 @@ CREATE TABLE `cm_visit` (
   `ip_countryCode`  varchar(255) NOT NULL default '',
   `ip_city`  varchar(255) NOT NULL default '',
   `ip_isp`  varchar(255) NOT NULL default '',
-  `visit_time` datetime NOT NULL default '0000-00-00 00:00:00',
+  `visit_time`  datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ,
   `user_agent` text DEFAULT NULL,
   `referer` text DEFAULT NULL,
   `visit_count` int(11) NOT NULL default '1',
@@ -321,12 +320,7 @@ INSERT INTO `cm_board_list` (`board_id`, `board_name`, `group_id`, `group_name`,
 ('gallery', 'gallery', 'community', '커뮤니티', 'gallery', '', 2, 2, 2, NOW()),
 ('notice', '공지사항', 'community', '커뮤니티', 'basic', '', 2, 2, 2, NOW());
 
---
--- 테이블의 덤프 데이터 `cm_config`
---
 
-INSERT INTO `cm_config` (`id`, `admin_id`, `cf_original_lang`, `site_title`, `admin_email`, `contact_number`, `fax_number`, `add_meta`, `add_js`, `template_id`, `shop_template_id`, `ip_access`, `ip_block`, `recaptcha_site_key`, `recaptcha_secret_key`, `google_map_iframe_src`, `deepl_api_use`, `deepl_api_key`, `deepl_api_plan`, `pwa_use`, `pwa_vapid_public_key`, `pwa_vapid_private_key`, `business_reg_no`, `online_sales_no`, `representative_name`, `privacy_manager`, `business_address`, `business_type`, `business_category`, `operating_hours`, `bank_name`, `account_holder`, `account_number`, `cf_add_sub_1`, `cf_add_con_1`, `cf_add_sub_2`, `cf_add_con_2`, `cf_add_sub_3`, `cf_add_con_3`, `cf_add_sub_4`, `cf_add_con_4`, `cf_add_sub_5`, `cf_add_con_5`, `updated_at`) VALUES
-(1,	'',	'KO',	'CM_BOARD',	'',	'',	'',	'',	'',	'basic', 'shop_basic',	'',	'',	'',	'',	'',	0,	'',	'free',	0,	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	NOW());
 
 --
 -- 테이블의 덤프 데이터 `cm_board_group`
@@ -350,7 +344,16 @@ INSERT INTO `cm_menu` (`menu_id`, `parent_id`, `menu_name`, `menu_url`, `menu_ic
 --
 
 INSERT INTO `cm_users` (`user_no`, `user_id`, `user_name`, `user_password`, `user_email`, `user_hp`, `user_lv`, `user_point`, `user_block`, `user_block_date`, `user_leave`, `user_leave_date`, `user_recommend`, `created_at`, `today_login`) VALUES
-(1, '', '', '', '', '', 10, 0, 0, '0000-00-00 00:00:00', 0, '0000-00-00 00:00:00', '', NOW(), NOW());
+(1, '', '', '', '', '', 10, 0, 0, NULL, 0, NULL, '', NOW(), NOW());
+
+
+--
+-- 테이블의 덤프 데이터 `cm_config`
+--
+
+INSERT INTO `cm_config` (`id`, `admin_id`, `cf_original_lang`, `site_title`, `admin_email`, `contact_number`, `fax_number`, `add_meta`, `add_js`, `template_id`, `shop_template_id`, `ip_access`, `ip_block`, `recaptcha_site_key`, `recaptcha_secret_key`, `google_map_iframe_src`, `deepl_api_use`, `deepl_api_key`, `deepl_api_plan`, `pwa_use`, `pwa_vapid_public_key`, `pwa_vapid_private_key`, `business_reg_no`, `online_sales_no`, `representative_name`, `privacy_manager`, `business_address`, `business_type`, `business_category`, `operating_hours`, `bank_name`, `account_holder`, `account_number`, `sns_facebook`, `sns_x`, `sns_kakao`, `sns_naver`, `sns_line`, `sns_pinterest`, `sns_linkedin`, `cf_add_sub_1`, `cf_add_con_1`, `cf_add_sub_2`, `cf_add_con_2`, `cf_add_sub_3`, `cf_add_con_3`, `cf_add_sub_4`, `cf_add_con_4`, `cf_add_sub_5`, `cf_add_con_5`, `updated_at`) VALUES
+(1,	'',	'KO',	'CM_BOARD',	'',	'',	'',	'',	'',	'basic', 'shop_basic',	'',	'',	'',	'',	'',	0,	'',	'free',	0,	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'',	'', '',	'',	'',	'',	'',	'',	NOW());
+
 
 --
 -- 테이블 구조 `cm_order`
@@ -374,8 +377,8 @@ CREATE TABLE `cm_order` (
   `plan_name` varchar(255) NOT NULL default '',
   `plan_interval` varchar(50) NOT NULL default '',
   `plan_amount` decimal(10,2) NOT NULL default '0.00',
-  `created_at` datetime NOT NULL default '0000-00-00 00:00:00',
-  `updated_at` datetime NOT NULL default '0000-00-00 00:00:00',
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ,
   PRIMARY KEY  (`order_id`),
   KEY `payment_id` (`payment_id`),
   KEY `subscription_id` (`subscription_id`),

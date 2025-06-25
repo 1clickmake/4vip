@@ -13,7 +13,7 @@ CM_BOARD 오픈소스 라이선스 (Free License)
 개발자: CMAKE
 이메일: 1clickmake@daum.net
 
-Copyright (c) 2024 CM_BOARD contributors
+Copyright (c) 2025 CM_BOARD contributors
 
 --- English Version ---
 
@@ -32,4 +32,4 @@ Project: CM_BOARD
 Developer: CMAKE
 Email: 1clickmake@daum.net
 
-Copyright (c) 2024 CM_BOARD contributors 
+Copyright (c) 2025 CM_BOARD contributors 

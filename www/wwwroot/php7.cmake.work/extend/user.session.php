@@ -136,5 +136,3 @@ function getSessionVariable($variableName, $default = null) {
 
     return $default;
 }
-
-?>

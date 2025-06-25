@@ -325,6 +325,242 @@
     background: #fee2e2;
 }
 
+/* 파일 미리보기 컨테이너 */
+#filePreview {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 16px;
+    padding: 16px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* 파일 미리보기 카드 스타일 */
+.preview-card {
+    position: relative;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    width: 100%;
+    max-width: none;
+}
+
+.preview-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
+}
+
+/* 이미지 컨테이너 */
+.preview-image-container {
+    position: relative;
+    width: 100%;
+    height: 80px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #f8fafc;
+    margin-bottom: 8px;
+}
+
+.preview-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 8px;
+    transition: transform 0.3s ease;
+}
+
+.preview-image:hover {
+    transform: scale(1.05);
+}
+
+/* 파일 아이콘 컨테이너 */
+.preview-icon-container {
+    position: relative;
+    width: 100%;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+.file-icon {
+    font-size: 32px;
+    color: #64748b;
+    transition: color 0.3s ease;
+}
+
+.preview-icon-container:hover .file-icon {
+    color: #3b82f6;
+}
+
+/* 삭제 버튼 */
+.delete-file-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 24px;
+    height: 24px;
+    background: rgba(239, 68, 68, 0.9);
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(4px);
+    z-index: 10;
+}
+
+.preview-card:hover .delete-file-btn {
+    opacity: 1;
+}
+
+.delete-file-btn:hover {
+    background: rgba(220, 38, 38, 1);
+    transform: scale(1.1);
+}
+
+.delete-icon {
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    line-height: 1;
+}
+
+/* 파일 정보 영역 */
+.preview-info {
+    text-align: left;
+}
+
+.preview-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0 0 4px 0;
+    word-break: break-word;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.preview-size {
+    font-size: 12px;
+    color: #6b7280;
+    margin: 0;
+    font-weight: 400;
+}
+
+/* 파일 타입별 아이콘 색상 */
+.file-icon.fa-file-pdf {
+    color: #dc2626;
+}
+
+.file-icon.fa-file-word {
+    color: #2563eb;
+}
+
+.file-icon.fa-file-excel {
+    color: #16a34a;
+}
+
+.file-icon.fa-file-powerpoint {
+    color: #ea580c;
+}
+
+.file-icon.fa-file-archive {
+    color: #7c3aed;
+}
+
+.file-icon.fa-file-code {
+    color: #059669;
+}
+
+.file-icon.fa-file-text {
+    color: #4b5563;
+}
+
+.file-icon.fa-file {
+    color: #6b7280;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 1200px) {
+    #filePreview {
+        grid-template-columns: repeat(6, 1fr);
+        gap: 12px;
+    }
+}
+
+@media (max-width: 992px) {
+    #filePreview {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+    }
+}
+
+@media (max-width: 768px) {
+    #filePreview {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        padding: 12px;
+    }
+    
+    .preview-card {
+        padding: 10px;
+    }
+    
+    .preview-image-container,
+    .preview-icon-container {
+        height: 70px;
+        margin-bottom: 6px;
+    }
+    
+    .file-icon {
+        font-size: 24px;
+    }
+    
+    .preview-title {
+        font-size: 12px;
+        -webkit-line-clamp: 1;
+    }
+    
+    .preview-size {
+        font-size: 10px;
+    }
+    
+    .delete-file-btn {
+        width: 20px;
+        height: 20px;
+        top: 6px;
+        right: 6px;
+    }
+    
+    .delete-icon {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    #filePreview {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        padding: 8px;
+    }
+}
+
+
+
 /* ====================================
    게시글 옵션
    ==================================== */
